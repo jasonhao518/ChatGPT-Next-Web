@@ -59,6 +59,13 @@ const FolderPage = dynamic(async () => (await import("./folder")).FolderPage, {
   loading: () => <Loading noLogo />,
 });
 
+const PreviewPage = dynamic(
+  async () => (await import("./preview")).PreviewPage,
+  {
+    loading: () => <Loading noLogo />,
+  },
+);
+
 export function useSwitchTheme() {
   const config = useAppConfig();
 
@@ -162,6 +169,7 @@ function Screen() {
               <Route path={Path.NewChat} element={<NewChat />} />
               <Route path={Path.Masks} element={<MaskPage />} />
               <Route path={Path.Folders} element={<FolderPage />} />
+              <Route path={Path.Preview} element={<PreviewPage />} />
               <Route path={Path.Chat} element={<Chat />} />
               <Route path={Path.Settings} element={<Settings />} />
             </Routes>

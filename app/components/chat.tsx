@@ -14,6 +14,7 @@ import RenameIcon from "../icons/rename.svg";
 import ExportIcon from "../icons/share.svg";
 import ReturnIcon from "../icons/return.svg";
 import CopyIcon from "../icons/copy.svg";
+import FolderIcon from "../icons/file-icon.svg";
 import LoadingIcon from "../icons/three-dots.svg";
 import PromptIcon from "../icons/prompt.svg";
 import MaskIcon from "../icons/mask.svg";
@@ -103,16 +104,24 @@ const TagWithTooltip = ({
   tooltipText: string;
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
-
+  const navigate = useNavigate();
   return (
     <div
       className="chat-message-action-tag"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onClick={() => setShowTooltip(!showTooltip)}
     >
       {tagText}
       {showTooltip && (
-        <div className="chat-message-action-tag-tooltip">{tooltipText}</div>
+        <div className="chat-message-action-tag-tooltip">
+          {tooltipText}
+          <button
+            onClick={() => {
+              navigate(Path.Preview);
+            }}
+          >
+            {"details"}
+          </button>
+        </div>
       )}
     </div>
   );
@@ -575,9 +584,13 @@ export function ChatActions(props: {
         />
       )}
       {props.folder.id != "" && (
-        <button onClick={() => setShowFolder(true)}>
-          {currentFile ? currentFile.name : props.folder.name}
-        </button>
+        <ChatAction
+          text={currentFile ? currentFile.name : props.folder.name}
+          icon={<FolderIcon />}
+          onClick={() => {
+            setShowFolder(true);
+          }}
+        />
       )}
       {showFolder && props.folder.id != "" && (
         <Selector
