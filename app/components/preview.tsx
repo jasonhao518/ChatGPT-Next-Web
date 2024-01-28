@@ -498,7 +498,11 @@ export function PreviewPage() {
 
         <div className={styles["mask-page-body"]}>
           <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
-            <Page pageNumber={pageNumber} />
+            <Page
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+              pageNumber={pageNumber}
+            />
           </Document>
         </div>
       </div>
