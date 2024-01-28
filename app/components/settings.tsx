@@ -260,6 +260,20 @@ function DangerItems() {
           type="danger"
         />
       </ListItem>
+      <ListItem
+        title={Locale.Settings.Danger.Clear.Title}
+        subTitle={Locale.Settings.Danger.Clear.SubTitle}
+      >
+        <IconButton
+          text={"Sign Out"}
+          onClick={async () => {
+            if (await showConfirm(Locale.Settings.Danger.Clear.Confirm)) {
+              signOut();
+            }
+          }}
+          type="danger"
+        />
+      </ListItem>
     </List>
   );
 }
@@ -687,18 +701,6 @@ export function Settings() {
                 <Avatar avatar={config.avatar} />
               </div>
             </Popover>
-          </ListItem>
-          <ListItem
-            title={Locale.Settings.Update.Version(currentVersion ?? "unknown")}
-            subTitle={
-              checkingUpdate
-                ? Locale.Settings.Update.IsChecking
-                : hasNewVersion
-                ? Locale.Settings.Update.FoundUpdate(remoteId ?? "ERROR")
-                : Locale.Settings.Update.IsLatest
-            }
-          >
-            <button onClick={() => signOut()}>Sign out</button>
           </ListItem>
           <ListItem
             title={Locale.Settings.Update.Version(currentVersion ?? "unknown")}
