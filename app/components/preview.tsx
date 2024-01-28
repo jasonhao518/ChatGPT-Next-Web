@@ -11,6 +11,7 @@ import EyeIcon from "../icons/eye.svg";
 import UploadIcon from "../icons/upload.svg";
 import DragIcon from "../icons/drag.svg";
 import { v4 as uuidv4 } from "uuid";
+import { useLocation } from "react-router-dom";
 
 import { Document, Page, pdfjs } from "react-pdf";
 
@@ -399,7 +400,38 @@ export function ContextPrompts(props: {
 
 export function PreviewPage() {
   const [numPages, setNumPages] = useState<number>();
-  const [pageNumber, setPageNumber] = useState<number>(10);
+  const [pageNumber, setPageNumber] = useState<number>(0);
+  const [title, setTitle] = useState<string>("");
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const folder = queryParams.get("folder");
+  const ref = queryParams.get("ref");
+  const [file, setFile] = useState<Blob | null>(null);
+
+  useEffect(() => {
+    const fetchPDF = async () => {
+      if (folder && ref) {
+        try {
+          const files = folderStore
+            .get(folder)
+            .files.filter((f) => ref.startsWith(f.index + "-"));
+          if (files && files.length > 0) {
+            setTitle(files[0].name);
+            setPageNumber(parseInt(ref.substring(ref.indexOf("-") + 1)));
+            const response = await fetch(files[0].url);
+            const blob = await response.blob();
+            setFile(blob);
+          }
+        } catch (error) {
+          console.error("Error fetching the PDF file:", error);
+        }
+      }
+    };
+    console.log(folder);
+    console.log(ref);
+
+    fetchPDF();
+  }, [folder]);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
     setNumPages(numPages);
@@ -447,9 +479,7 @@ export function PreviewPage() {
       <div className={styles["mask-page"]}>
         <div className="window-header">
           <div className="window-header-title">
-            <div className="window-header-main-title">
-              {Locale.Mask.Page.Title}
-            </div>
+            <div className="window-header-main-title">{title}</div>
             <div className="window-header-submai-title">
               {Locale.Mask.Page.SubTitle(allMasks.length)}
             </div>
@@ -467,10 +497,7 @@ export function PreviewPage() {
         </div>
 
         <div className={styles["mask-page-body"]}>
-          <Document
-            file="https://chatlogfs.s3.us-east-1.amazonaws.com/51dd01e2-fcef-48de-9df2-2f62f0bdcb92/1-1cb9519b-7dba-40ce-a145-9795cdfff281"
-            onLoadSuccess={onDocumentLoadSuccess}
-          >
+          <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
             <Page pageNumber={pageNumber} />
           </Document>
         </div>

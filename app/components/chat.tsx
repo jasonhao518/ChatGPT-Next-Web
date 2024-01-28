@@ -98,9 +98,11 @@ const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
 
 const TagWithTooltip = ({
   tagText,
+  folder,
   tooltipText,
 }: {
   tagText: string;
+  folder: string;
   tooltipText: string;
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -116,7 +118,13 @@ const TagWithTooltip = ({
           {tooltipText}
           <button
             onClick={() => {
-              navigate(Path.Preview);
+              navigate(
+                Path.Preview +
+                  "?folder=" +
+                  folder +
+                  "&ref=" +
+                  tagText.substring(1, tagText.length - 1),
+              );
             }}
           >
             {"details"}
@@ -1327,6 +1335,7 @@ function _Chat() {
                     {message.references?.map((ref, index) => (
                       <TagWithTooltip
                         key={index}
+                        folder={session.folder.id}
                         tagText={ref.referenceNumber}
                         tooltipText={ref.quote}
                       />
