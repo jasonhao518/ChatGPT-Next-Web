@@ -177,7 +177,7 @@ const cs: PartialLocaleType = {
     Edit: "Kontextové a paměťové pokyny",
     Add: "Přidat pokyn",
   },
-  Plugin: {
+  Folder: {
     Name: "Plugin",
   },
   FineTuned: {

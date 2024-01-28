@@ -89,6 +89,7 @@ import { prettyObject } from "../utils/format";
 import { ExportMessageModal } from "./exporter";
 import { getClientConfig } from "../config/client";
 import { useAllModels } from "../utils/hooks";
+import { Folder, S3File } from "../store/folder";
 
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
@@ -410,6 +411,8 @@ export function ChatActions(props: {
   scrollToBottom: () => void;
   showPromptHints: () => void;
   hitBottom: boolean;
+  folder: Folder;
+  display: boolean;
 }) {
   const config = useAppConfig();
   const navigate = useNavigate();
@@ -431,12 +434,15 @@ export function ChatActions(props: {
 
   // switch model
   const currentModel = chatStore.currentSession().mask.modelConfig.model;
+  const currentFile = chatStore.currentSession().folder.selectedFile;
+
   const allModels = useAllModels();
   const models = useMemo(
     () => allModels.filter((m) => m.available),
     [allModels],
   );
   const [showModelSelector, setShowModelSelector] = useState(false);
+  const [showFolder, setShowFolder] = useState(false);
 
   useEffect(() => {
     // if current model is not available
@@ -490,21 +496,22 @@ export function ChatActions(props: {
           </>
         }
       />
-
-      <ChatAction
-        onClick={props.showPromptHints}
-        text={Locale.Chat.InputActions.Prompt}
-        icon={<PromptIcon />}
-      />
-
-      <ChatAction
-        onClick={() => {
-          navigate(Path.Masks);
-        }}
-        text={Locale.Chat.InputActions.Masks}
-        icon={<MaskIcon />}
-      />
-
+      {props.display && (
+        <ChatAction
+          onClick={props.showPromptHints}
+          text={Locale.Chat.InputActions.Prompt}
+          icon={<PromptIcon />}
+        />
+      )}
+      {props.display && (
+        <ChatAction
+          onClick={() => {
+            navigate(Path.Masks);
+          }}
+          text={Locale.Chat.InputActions.Masks}
+          icon={<MaskIcon />}
+        />
+      )}
       <ChatAction
         text={Locale.Chat.InputActions.Clear}
         icon={<BreakIcon />}
@@ -541,6 +548,38 @@ export function ChatActions(props: {
               session.mask.syncGlobalConfig = false;
             });
             showToast(s[0]);
+          }}
+        />
+      )}
+      {props.folder.id != "" && (
+        <button onClick={() => setShowFolder(true)}>
+          {currentFile ? currentFile.name : props.folder.name}
+        </button>
+      )}
+      {showFolder && props.folder.id != "" && (
+        <Selector
+          defaultSelectedValue={currentFile ? currentFile.id : ""}
+          items={[
+            { title: props.folder.name, value: "" },
+            ...props.folder?.files.map((m) => ({
+              title: m.index + ". " + m.name,
+              value: m.id,
+            })),
+          ]}
+          onClose={() => setShowFolder(false)}
+          onSelection={(s) => {
+            if (s.length === 0) return;
+            const folders = props.folder.files.filter((f) => f.id === s[0]);
+
+            chatStore.updateCurrentSession((session) => {
+              session.folder.selectedFile = (
+                folders.length > 0 ? folders[0] : null
+              ) as S3File;
+            });
+
+            showToast(
+              folders.map((item) => item.index + ". " + item.name).join(""),
+            );
           }}
         />
       )}
@@ -1248,7 +1287,11 @@ function _Chat() {
                       defaultShow={i >= messages.length - 6}
                     />
                   </div>
-
+                  <div>
+                    {message.references?.map((ref) => (
+                      <p key={ref.referenceNumber}>{ref.quote}</p>
+                    ))}
+                  </div>
                   <div className={styles["chat-message-action-date"]}>
                     {isContext
                       ? Locale.Chat.IsContext
@@ -1261,11 +1304,11 @@ function _Chat() {
           );
         })}
       </div>
-
       <div className={styles["chat-input-panel"]}>
         <PromptHints prompts={promptHints} onPromptSelect={onPromptSelect} />
-
         <ChatActions
+          display={session?.folder?.id === ""}
+          folder={session?.folder}
           showPromptModal={() => setShowPromptModal(true)}
           scrollToBottom={scrollToBottom}
           hitBottom={hitBottom}

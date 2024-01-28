@@ -18,9 +18,14 @@ import { prettyObject } from "../utils/format";
 import { estimateTokenLength } from "../utils/token";
 import { nanoid } from "nanoid";
 import { createPersistStore } from "../utils/store";
-
+import { Folder, createEmptyFolder } from "./folder";
+export type Reference = {
+  referenceNumber: string;
+  quote: string;
+};
 export type ChatMessage = RequestMessage & {
   date: string;
+  references?: Array<Reference>;
   streaming?: boolean;
   isError?: boolean;
   id: string;
@@ -53,7 +58,7 @@ export interface ChatSession {
   lastUpdate: number;
   lastSummarizeIndex: number;
   clearContextIndex?: number;
-
+  folder: Folder;
   mask: Mask;
 }
 
@@ -76,7 +81,7 @@ function createEmptySession(): ChatSession {
     },
     lastUpdate: Date.now(),
     lastSummarizeIndex: 0,
-
+    folder: createEmptyFolder(),
     mask: createEmptyMask(),
   };
 }
@@ -194,6 +199,29 @@ export const useChatStore = createPersistStore(
         }));
       },
 
+      newSession2(folder?: Folder) {
+        const session = createEmptySession();
+
+        if (folder) {
+          const config = useAppConfig.getState();
+          const globalModelConfig = config.modelConfig;
+
+          session.folder = {
+            ...folder,
+            modelConfig: {
+              ...globalModelConfig,
+              ...folder.modelConfig,
+            },
+          };
+          session.topic = folder.name;
+        }
+
+        set((state) => ({
+          currentSessionIndex: 0,
+          sessions: [session].concat(state.sessions),
+        }));
+      },
+
       nextSession(delta: number) {
         const n = get().sessions.length;
         const limit = (x: number) => (x + n) % n;
@@ -259,6 +287,7 @@ export const useChatStore = createPersistStore(
       },
 
       onNewMessage(message: ChatMessage) {
+        console.log("new message: " + JSON.stringify(message));
         get().updateCurrentSession((session) => {
           session.messages = session.messages.concat();
           session.lastUpdate = Date.now();
@@ -325,7 +354,22 @@ export const useChatStore = createPersistStore(
           onFinish(message) {
             botMessage.streaming = false;
             if (message) {
-              botMessage.content = message;
+              // handle references
+              const trimedMessage = message.trim();
+              if (trimedMessage.startsWith("```json")) {
+                const content = trimedMessage.substring(
+                  7,
+                  trimedMessage.length - 3,
+                );
+                const json = JSON.parse(content) as any;
+                if (json?.output?.answer) {
+                  console.log(json);
+                  botMessage.content = json?.output?.answer;
+                  botMessage.references = json?.output?.references;
+                }
+              } else {
+                botMessage.content = message;
+              }
               get().onNewMessage(botMessage);
             }
             ChatControllerPool.remove(session.id, botMessage.id);

@@ -25,8 +25,8 @@ const isApp = !!getClientConfig()?.isApp;
 export type SyncStore = GetStoreState<typeof useSyncStore>;
 
 const DEFAULT_SYNC_STATE = {
-  provider: ProviderType.WebDAV,
-  useProxy: true,
+  provider: ProviderType.UpStash,
+  useProxy: false,
   proxyUrl: corsPath(ApiPath.Cors),
 
   webdav: {
@@ -36,9 +36,9 @@ const DEFAULT_SYNC_STATE = {
   },
 
   upstash: {
-    endpoint: "",
+    endpoint: "/api/upstash",
     username: STORAGE_KEY,
-    apiKey: "",
+    apiKey: "anything",
   },
 
   lastSyncTime: 0,
@@ -50,7 +50,7 @@ export const useSyncStore = createPersistStore(
   (set, get) => ({
     coundSync() {
       const config = get()[get().provider];
-      return Object.values(config).every((c) => c.toString().length > 0);
+      return Object.values(config).every((c) => true);
     },
 
     markSyncTime() {
@@ -60,8 +60,10 @@ export const useSyncStore = createPersistStore(
     export() {
       const state = getLocalAppState();
       const datePart = isApp
-      ? `${new Date().toLocaleDateString().replace(/\//g, '_')} ${new Date().toLocaleTimeString().replace(/:/g, '_')}`
-      : new Date().toLocaleString();
+        ? `${new Date().toLocaleDateString().replace(/\//g, "_")} ${new Date()
+            .toLocaleTimeString()
+            .replace(/:/g, "_")}`
+        : new Date().toLocaleString();
 
       const fileName = `Backup-${datePart}.json`;
       downloadAs(JSON.stringify(state), fileName);

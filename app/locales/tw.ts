@@ -171,7 +171,7 @@ const tw: PartialLocaleType = {
     Edit: "前置上下文和歷史記憶",
     Add: "新增一條",
   },
-  Plugin: { Name: "外掛" },
+  Folder: { Name: "外掛" },
   FineTuned: { Sysmessage: "你是一個助手" },
   Mask: {
     Name: "面具",

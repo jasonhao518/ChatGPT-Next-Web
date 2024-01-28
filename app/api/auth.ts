@@ -66,6 +66,10 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
     if (systemApiKey) {
       console.log("[Auth] use system api key");
       req.headers.set("Authorization", `Bearer ${systemApiKey}`);
+      return {
+        error: false,
+        key: systemApiKey,
+      };
     } else {
       console.log("[Auth] admin did not provide an api key");
     }
@@ -75,5 +79,6 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
 
   return {
     error: false,
+    key: apiKey,
   };
 }

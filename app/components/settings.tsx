@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 
 import styles from "./settings.module.scss";
-
+import { signOut } from "next-auth/react";
 import ResetIcon from "../icons/reload.svg";
 import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
@@ -503,13 +503,6 @@ function SyncItems() {
           }
         >
           <div style={{ display: "flex" }}>
-            <IconButton
-              icon={<ConfigIcon />}
-              text={Locale.UI.Config}
-              onClick={() => {
-                setShowSyncConfigModal(true);
-              }}
-            />
             {couldSync && (
               <IconButton
                 icon={<ResetIcon />}
@@ -550,10 +543,6 @@ function SyncItems() {
           </div>
         </ListItem>
       </List>
-
-      {showSyncConfigModal && (
-        <SyncConfigModal onClose={() => setShowSyncConfigModal(false)} />
-      )}
     </>
   );
 }
@@ -699,7 +688,18 @@ export function Settings() {
               </div>
             </Popover>
           </ListItem>
-
+          <ListItem
+            title={Locale.Settings.Update.Version(currentVersion ?? "unknown")}
+            subTitle={
+              checkingUpdate
+                ? Locale.Settings.Update.IsChecking
+                : hasNewVersion
+                ? Locale.Settings.Update.FoundUpdate(remoteId ?? "ERROR")
+                : Locale.Settings.Update.IsLatest
+            }
+          >
+            <button onClick={() => signOut()}>Sign out</button>
+          </ListItem>
           <ListItem
             title={Locale.Settings.Update.Version(currentVersion ?? "unknown")}
             subTitle={
@@ -926,6 +926,7 @@ export function Settings() {
                   >
                     <input
                       type="checkbox"
+                      disabled
                       checked={accessStore.useCustomConfig}
                       onChange={(e) =>
                         accessStore.update(

@@ -4,7 +4,7 @@ import { ModelProvider, OpenaiPath } from "@/app/constant";
 import { prettyObject } from "@/app/utils/format";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../auth";
-import { requestOpenai } from "../../common";
+import { requestLangchain, requestOpenai } from "../../common";
 
 const ALLOWD_PATH = new Set(Object.values(OpenaiPath));
 
@@ -52,8 +52,14 @@ async function handle(
     });
   }
 
+  // when folder is provided, query using langchain instead
+  const folder = req.headers.get("Folder");
+
+  // handle langchain
   try {
-    const response = await requestOpenai(req);
+    const response = folder
+      ? await requestLangchain(req)
+      : await requestOpenai(req);
 
     // list models
     if (subpath === OpenaiPath.ListModelPath && response.status === 200) {
@@ -63,7 +69,6 @@ async function handle(
         status: response.status,
       });
     }
-
     return response;
   } catch (e) {
     console.error("[OpenAI] ", e);

@@ -233,8 +233,8 @@ const fr: PartialLocaleType = {
     Edit: "Contextes et mémoires de prompts",
     Add: "Ajouter un prompt",
   },
-  Plugin: {
-    Name: "Extension",
+  Folder: {
+    Name: "Folder",
   },
   FineTuned: {
     Sysmessage: "Eres un asistente que",

@@ -301,8 +301,8 @@ const id: PartialLocaleType = {
     Clear: "Bersihkan Konteks",
     Revert: "Kembali ke Posisi Sebelumnya",
   },
-  Plugin: {
-    Name: "Plugin",
+  Folder: {
+    Name: "Folder",
   },
   FineTuned: {
     Sysmessage: "Anda adalah asisten yang",
@@ -369,8 +369,8 @@ const id: PartialLocaleType = {
   },
   Exporter: {
     Description: {
-      Title: "Hanya pesan setelah menghapus konteks yang akan ditampilkan"
-    },  
+      Title: "Hanya pesan setelah menghapus konteks yang akan ditampilkan",
+    },
     Model: "Model",
     Messages: "Pesan",
     Topic: "Topik",

@@ -180,8 +180,8 @@ const ru: PartialLocaleType = {
     Edit: "Контекстные и памятные подсказки",
     Add: "Добавить подсказку",
   },
-  Plugin: {
-    Name: "Плагин",
+  Folder: {
+    Name: "Folder",
   },
   FineTuned: {
     Sysmessage: "Вы - ассистент, который",
