@@ -95,6 +95,29 @@ const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
 });
 
+const TagWithTooltip = ({
+  tagText,
+  tooltipText,
+}: {
+  tagText: string;
+  tooltipText: string;
+}) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  return (
+    <div
+      className="chat-message-action-tag"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      {tagText}
+      {showTooltip && (
+        <div className="chat-message-action-tag-tooltip">{tooltipText}</div>
+      )}
+    </div>
+  );
+};
+
 export function SessionConfigModel(props: { onClose: () => void }) {
   const chatStore = useChatStore();
   const session = chatStore.currentSession();
@@ -1287,9 +1310,13 @@ function _Chat() {
                       defaultShow={i >= messages.length - 6}
                     />
                   </div>
-                  <div>
-                    {message.references?.map((ref) => (
-                      <p key={ref.referenceNumber}>{ref.quote}</p>
+                  <div className={styles["chat-message-action-tag-container"]}>
+                    {message.references?.map((ref, index) => (
+                      <TagWithTooltip
+                        key={index}
+                        tagText={ref.referenceNumber}
+                        tooltipText={ref.quote}
+                      />
                     ))}
                   </div>
                   <div className={styles["chat-message-action-date"]}>
