@@ -19,7 +19,7 @@ export default withAuth(
     }
     if (!isAuth && !isSiteWeb) {
       return NextResponse.redirect(
-        new URL(`https://www${process.env.ROOT_DOAMIN}/login?from=${encodeURIComponent(from)}`, req.url)
+        new URL(`https://www${process.env.ROOT_DOMAIN}/login?from=${encodeURIComponent(from)}`, req.url)
       );
     }else if(isAPI){
       // if calling api, check quota
