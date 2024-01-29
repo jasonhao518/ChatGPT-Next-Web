@@ -257,7 +257,7 @@ const bn: PartialLocaleType = {
     Clear: "সঙ্গতি পরিস্কার করুন",
     Revert: "পূর্ববর্তী অবস্থানে ফিরে যান",
   },
-  Folder: {
+  Plugin: {
     Name: "প্লাগইন",
   },
   FineTuned: {

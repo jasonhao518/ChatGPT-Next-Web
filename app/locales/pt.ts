@@ -376,8 +376,8 @@ const pt: PartialLocaleType = {
     Clear: "Contexto Limpo",
     Revert: "Reverter",
   },
-  Folder: {
-    Name: "Folder",
+  Plugin: {
+    Name: "Plugin",
   },
   FineTuned: {
     Sysmessage: "Você é um assistente que",

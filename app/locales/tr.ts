@@ -180,8 +180,8 @@ const tr: PartialLocaleType = {
     Edit: "Bağlamsal ve Bellek Komutları",
     Add: "Yeni Ekle",
   },
-  Folder: {
-    Name: "Folder",
+  Plugin: {
+    Name: "Plugin",
   },
   FineTuned: {
     Sysmessage: "Sen bir asistansın",

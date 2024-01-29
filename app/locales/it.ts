@@ -179,7 +179,7 @@ const it: PartialLocaleType = {
     Edit: "Prompt contestuali e di memoria",
     Add: "Aggiungi altro",
   },
-  Folder: {
+  Plugin: {
     Name: "Plugin",
   },
   FineTuned: {

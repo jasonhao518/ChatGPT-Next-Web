@@ -179,7 +179,7 @@ const de: PartialLocaleType = {
     Edit: "Kontext- und Gedächtnis-Prompts",
     Add: "Hinzufügen",
   },
-  Folder: {
+  Plugin: {
     Name: "Plugin",
   },
   FineTuned: {

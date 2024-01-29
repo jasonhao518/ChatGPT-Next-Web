@@ -301,8 +301,8 @@ const id: PartialLocaleType = {
     Clear: "Bersihkan Konteks",
     Revert: "Kembali ke Posisi Sebelumnya",
   },
-  Folder: {
-    Name: "Folder",
+  Plugin: {
+    Name: "Plugin",
   },
   FineTuned: {
     Sysmessage: "Anda adalah asisten yang",

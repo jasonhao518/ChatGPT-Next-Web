@@ -175,7 +175,7 @@ const vi: PartialLocaleType = {
     Edit: "Thiết lập ngữ cảnh và bộ nhớ",
     Add: "Thêm tin nhắn",
   },
-  Folder: {
+  Plugin: {
     Name: "Plugin",
   },
   FineTuned: {
