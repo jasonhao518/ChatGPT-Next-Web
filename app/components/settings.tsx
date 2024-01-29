@@ -702,6 +702,7 @@ export function Settings() {
               </div>
             </Popover>
           </ListItem>
+
           <ListItem
             title={Locale.Settings.Update.Version(currentVersion ?? "unknown")}
             subTitle={
@@ -928,7 +929,6 @@ export function Settings() {
                   >
                     <input
                       type="checkbox"
-                      disabled
                       checked={accessStore.useCustomConfig}
                       onChange={(e) =>
                         accessStore.update(
