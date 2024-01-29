@@ -517,13 +517,6 @@ function SyncItems() {
           }
         >
           <div style={{ display: "flex" }}>
-            <IconButton
-              icon={<ConfigIcon />}
-              text={Locale.UI.Config}
-              onClick={() => {
-                setShowSyncConfigModal(true);
-              }}
-            />
             {couldSync && (
               <IconButton
                 icon={<ResetIcon />}
@@ -564,10 +557,6 @@ function SyncItems() {
           </div>
         </ListItem>
       </List>
-
-      {showSyncConfigModal && (
-        <SyncConfigModal onClose={() => setShowSyncConfigModal(false)} />
-      )}
     </>
   );
 }
