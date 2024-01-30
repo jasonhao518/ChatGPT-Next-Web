@@ -7,8 +7,8 @@ import EditIcon from "../icons/edit.svg";
 import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
 import DeleteIcon from "../icons/delete.svg";
-import EyeIcon from "../icons/eye.svg";
-import UploadIcon from "../icons/upload.svg";
+import PrevIcon from "../icons/previous.svg";
+import NextIcon from "../icons/next.svg";
 import DragIcon from "../icons/drag.svg";
 import { v4 as uuidv4 } from "uuid";
 import { useLocation } from "react-router-dom";
@@ -326,22 +326,22 @@ export function PreviewPage() {
           <div className="window-header-title">
             <div className="window-header-main-title">{title}</div>
             <div className="window-header-submai-title">
+              <IconButton
+                icon={<PrevIcon />}
+                bordered
+                onClick={() => setPageNumber(pageNumber - 1)}
+              />
               {pageNumber > 0 ? pageNumber : "1-10"}/{numPages}
+              <IconButton
+                icon={<NextIcon />}
+                bordered
+                onClick={() => setPageNumber(pageNumber + 1)}
+              />
             </div>
           </div>
 
           <div className="window-actions">
             <div className="window-action-button">
-              <IconButton
-                icon={<CloseIcon />}
-                bordered
-                onClick={() => setPageNumber(pageNumber + 1)}
-              />
-              <IconButton
-                icon={<CloseIcon />}
-                bordered
-                onClick={() => setPageNumber(pageNumber - 1)}
-              />
               <IconButton
                 icon={<CloseIcon />}
                 bordered
