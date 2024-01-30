@@ -335,6 +335,16 @@ export function PreviewPage() {
               <IconButton
                 icon={<CloseIcon />}
                 bordered
+                onClick={() => setPageNumber(pageNumber + 1)}
+              />
+              <IconButton
+                icon={<CloseIcon />}
+                bordered
+                onClick={() => setPageNumber(pageNumber - 1)}
+              />
+              <IconButton
+                icon={<CloseIcon />}
+                bordered
                 onClick={() => navigate(-1)}
               />
             </div>
@@ -343,26 +353,11 @@ export function PreviewPage() {
 
         <div className={styles["mask-page-body"]}>
           <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
-            {pageNumber > 0 && (
-              <Page
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
-                pageNumber={pageNumber}
-              />
-            )}
-            {pageNumber == 0 &&
-              numPages &&
-              Array.from(
-                new Array(numPages > 10 ? 10 : numPages),
-                (el, index) => (
-                  <Page
-                    key={`page_${index + 1}`}
-                    renderTextLayer={false}
-                    renderAnnotationLayer={false}
-                    pageNumber={index}
-                  />
-                ),
-              )}
+            <Page
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+              pageNumber={pageNumber}
+            />
           </Document>
         </div>
       </div>

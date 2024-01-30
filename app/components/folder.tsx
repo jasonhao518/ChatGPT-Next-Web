@@ -231,7 +231,7 @@ export function FolderConfig(props: {
                       props.folder.id +
                       "&ref=" +
                       item.index +
-                      "-",
+                      "-1",
                   );
                 }}
               >
