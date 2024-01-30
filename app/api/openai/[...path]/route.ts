@@ -4,7 +4,12 @@ import { ModelProvider, OpenaiPath, Quota } from "@/app/constant";
 import { prettyObject } from "@/app/utils/format";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../auth";
-import { logTransaction, requestLangchain, requestOpenai } from "../../common";
+import {
+  getQuota,
+  logTransaction,
+  requestLangchain,
+  requestOpenai,
+} from "../../common";
 
 const ALLOWD_PATH = new Set(Object.values(OpenaiPath));
 
@@ -51,6 +56,15 @@ async function handle(
     );
   }
 
+  const quota = await getQuota(req, Quota.OpenAI);
+  if (quota <= 0) {
+    await logTransaction(req, Quota.OpenAI, false, {
+      error: {
+        message: "NO_QUOTA",
+      },
+      quota,
+    });
+  }
   const authResult = auth(req, ModelProvider.GPT);
   if (authResult.error) {
     await logTransaction(req, Quota.OpenAI, false, {
@@ -66,7 +80,7 @@ async function handle(
   const system = authResult.system;
   // when folder is provided, query using langchain instead
   const folder = req.headers.get("Folder");
-
+  const length = parseInt(req.headers.get("Content-Length")!) - 370;
   // handle langchain
   try {
     const response = folder
@@ -86,6 +100,7 @@ async function handle(
       model,
       subpath,
       folder,
+      length,
       system,
     });
     return response;
@@ -95,6 +110,7 @@ async function handle(
       ...error,
       subpath,
       folder,
+      length,
       system,
     });
     return NextResponse.json(prettyObject(error));
