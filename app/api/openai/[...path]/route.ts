@@ -55,8 +55,8 @@ async function handle(
       },
     );
   }
-
-  const quota = await getQuota(req, Quota.OpenAI);
+  const folder = req.headers.get("Folder");
+  const quota = await getQuota(req, folder ? Quota.Folder : Quota.OpenAI);
   if (quota <= 0) {
     await logTransaction(req, Quota.OpenAI, false, {
       error: {
@@ -79,12 +79,11 @@ async function handle(
   }
   const system = authResult.system;
   // when folder is provided, query using langchain instead
-  const folder = req.headers.get("Folder");
   const length = parseInt(req.headers.get("Content-Length")!) - 370;
   // handle langchain
   try {
     const response = folder
-      ? await requestLangchain(req, authResult.key)
+      ? await requestLangchain(req)
       : await requestOpenai(req);
 
     // list models

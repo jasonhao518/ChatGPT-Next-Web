@@ -226,7 +226,6 @@ export async function requestLangchain(
       config: {
         configurable: {
           model_name: model,
-          openai_api_key: apiKey,
           temperature: temperature,
           search_kwargs: file
             ? { expr: `folder == '${folder}' and file == '${file}'` }

@@ -27,6 +27,7 @@ export enum Path {
 
 export enum Quota {
   Upload = "upload",
+  Folder = "folder",
   Storage = "storage",
   GPT4 = "gpt4",
   OpenAI = "openai",
