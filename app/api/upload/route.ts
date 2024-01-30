@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
       folderName,
       filename,
       size,
+      quota: upload,
       contentType,
     });
     return Response.json({ url, fields });
@@ -66,6 +67,7 @@ export async function POST(req: NextRequest) {
       folderName,
       filename,
       size,
+      quota: upload,
       contentType,
     });
     return Response.json({ error: error.message });
