@@ -462,7 +462,7 @@ export function FolderPage() {
             <div className="window-header-main-title">
               {Locale.Mask.Page.Title}
             </div>
-            <div className="window-header-submai-title">
+            <div className="window-header-sub-title">
               {Locale.Mask.Page.SubTitle(allMasks.length)}
             </div>
           </div>

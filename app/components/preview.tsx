@@ -1,7 +1,7 @@
 import { IconButton } from "./button";
 import { ErrorBoundary } from "./error";
 import { S3File } from "../store/folder";
-import styles from "./folder.module.scss";
+import styles from "./preview.module.scss";
 
 import EditIcon from "../icons/edit.svg";
 import AddIcon from "../icons/add.svg";
@@ -321,17 +321,19 @@ export function PreviewPage() {
 
   return (
     <ErrorBoundary>
-      <div className={styles["mask-page"]}>
+      <div className={styles["preview-page"]}>
         <div className="window-header">
           <div className="window-header-title">
             <div className="window-header-main-title">{title}</div>
-            <div className="window-header-submai-title">
+            <div className="window-header-preview-title ">
               <IconButton
                 icon={<PrevIcon />}
                 bordered
                 onClick={() => setPageNumber(pageNumber - 1)}
               />
-              {pageNumber > 0 ? pageNumber : "1-10"}/{numPages}
+              <h3>
+                {pageNumber > 0 ? pageNumber : "1-10"}/{numPages}
+              </h3>
               <IconButton
                 icon={<NextIcon />}
                 bordered
@@ -351,7 +353,7 @@ export function PreviewPage() {
           </div>
         </div>
 
-        <div className={styles["mask-page-body"]}>
+        <div className={styles["preview-page-body"]}>
           <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
             <Page
               renderTextLayer={false}
