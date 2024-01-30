@@ -350,6 +350,14 @@ export function PreviewPage() {
                 pageNumber={pageNumber}
               />
             )}
+            {pageNumber == 0 &&
+              numPages &&
+              Array.from(
+                new Array(numPages > 10 ? 10 : numPages),
+                (el, index) => (
+                  <Page key={`page_${index + 1}`} pageNumber={index} />
+                ),
+              )}
           </Document>
         </div>
       </div>
