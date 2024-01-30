@@ -211,7 +211,7 @@ export async function requestLangchain(
   const jsonBody = JSON.parse(clonedBody);
 
   const question = jsonBody.messages[jsonBody.messages.length - 1].content;
-
+  console.log("apiKey:" + apiKey);
   const model = "gpt-3.5-turbo-16k";
   const temperature = jsonBody.temperature;
   const fetchOptions: RequestInit = {
