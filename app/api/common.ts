@@ -44,6 +44,10 @@ export async function logTransaction(
 ) {
   const token = await getToken({ req });
   const transactionId = req.headers.get("x-transaction-id");
+  const country = req.headers.get("X-Vercel-IP-Country");
+  const region = req.headers.get("X-Vercel-IP-Country-Region");
+  const city = req.headers.get("X-Vercel-IP-City");
+
   if (token) {
     console.log(btoa(token.email!));
     // const result = await kv.decrby(btoa(token.email!)+":"+type, amount)
@@ -53,6 +57,9 @@ export async function logTransaction(
       user: token.email,
       date: new Date().toISOString(),
       type,
+      country,
+      region,
+      city,
       success,
       transactionId,
     };
