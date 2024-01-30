@@ -1,10 +1,10 @@
 import { type OpenAIListModelResponse } from "@/app/client/platforms/openai";
 import { getServerSideConfig } from "@/app/config/server";
-import { ModelProvider, OpenaiPath } from "@/app/constant";
+import { ModelProvider, OpenaiPath, Quota } from "@/app/constant";
 import { prettyObject } from "@/app/utils/format";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../auth";
-import { requestLangchain, requestOpenai } from "../../common";
+import { logTransaction, requestLangchain, requestOpenai } from "../../common";
 
 const ALLOWD_PATH = new Set(Object.values(OpenaiPath));
 
@@ -34,6 +34,12 @@ async function handle(
 
   if (!ALLOWD_PATH.has(subpath)) {
     console.log("[OpenAI Route] forbidden path ", subpath);
+    logTransaction(req, Quota.OpenAI, false, {
+      error: {
+        message: "FORBIDDEN_PATH",
+      },
+      subpath,
+    });
     return NextResponse.json(
       {
         error: true,
@@ -47,18 +53,24 @@ async function handle(
 
   const authResult = auth(req, ModelProvider.GPT);
   if (authResult.error) {
+    logTransaction(req, Quota.OpenAI, false, {
+      error: {
+        message: "AUTH_ERROR",
+      },
+      subpath,
+    });
     return NextResponse.json(authResult, {
       status: 401,
     });
   }
-
+  const system = authResult.system;
   // when folder is provided, query using langchain instead
   const folder = req.headers.get("Folder");
 
   // handle langchain
   try {
     const response = folder
-      ? await requestLangchain(req)
+      ? await requestLangchain(req, authResult.key)
       : await requestOpenai(req);
 
     // list models
@@ -69,11 +81,18 @@ async function handle(
         status: response.status,
       });
     }
-
+    const model = response.headers.get("openai-model");
+    logTransaction(req, Quota.OpenAI, true, { model, subpath, folder, system });
     return response;
-  } catch (e) {
-    console.error("[OpenAI] ", e);
-    return NextResponse.json(prettyObject(e));
+  } catch (error: any) {
+    console.error("[OpenAI] ", error);
+    logTransaction(req, Quota.OpenAI, false, {
+      ...error,
+      subpath,
+      folder,
+      system,
+    });
+    return NextResponse.json(prettyObject(error));
   }
 }
 

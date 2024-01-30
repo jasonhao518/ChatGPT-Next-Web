@@ -30,6 +30,7 @@ import {
   Popover,
   Select,
   showConfirm,
+  showToast,
 } from "./ui-lib";
 import { Avatar, AvatarPicker } from "./emoji";
 import Locale, { AllLangs, ALL_LANG_OPTIONS, Lang } from "../locales";
@@ -85,14 +86,17 @@ export function FolderConfig(props: {
     const index = props.folder.files.length + 1;
     fileInput.onchange = (event: any) => {
       const file = event.target.files[0];
+      const size = file.size;
       fetch("/api/upload", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-transaction-id": uuidv4(),
         },
         body: JSON.stringify({
           fileId,
           index,
+          size,
           folder,
           folderName,
           filename: file?.name,
@@ -131,6 +135,14 @@ export function FolderConfig(props: {
               return null;
             }
           });
+        } else {
+          const { error } = await response.json();
+          if ("NO_QUOTA" === error) {
+            // TODO use localise error message
+            showToast(error);
+          } else {
+            showToast(error);
+          }
         }
       });
     };

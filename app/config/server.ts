@@ -102,6 +102,24 @@ export const getServerSideConfig = () => {
     disableGPT4,
     hideBalanceQuery: !process.env.ENABLE_BALANCE_QUERY,
     disableFastLink: !!process.env.DISABLE_FAST_LINK,
-    customModels,
   };
+};
+
+export const getCustomModels = (disableGPT4: boolean) => {
+  if (typeof process === "undefined") {
+    throw Error(
+      "[Server Config] you are importing a nodejs-only module outside of nodejs",
+    );
+  }
+
+  let customModels = process.env.CUSTOM_MODELS ?? "";
+
+  if (disableGPT4) {
+    if (customModels) customModels += ",";
+    customModels += DEFAULT_MODELS.filter((m) => m.name.startsWith("gpt-4"))
+      .map((m) => "-" + m.name)
+      .join(",");
+  }
+
+  return customModels;
 };
