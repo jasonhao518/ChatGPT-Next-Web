@@ -352,7 +352,7 @@ export function PreviewPage() {
             )}
             {pageNumber == 0 &&
               Array.from(new Array(numPages), (el, index) => (
-                <Page key={`page_${index + 1}`} pageNumber={index + 1} />
+                <Page key={`page_${index + 1}`} pageNumber={index} />
               ))}
           </Document>
         </div>
