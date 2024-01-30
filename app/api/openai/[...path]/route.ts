@@ -100,6 +100,7 @@ async function handle(
       model,
       subpath,
       folder,
+      quota,
       length,
       system,
     });
@@ -110,6 +111,7 @@ async function handle(
       ...error,
       subpath,
       folder,
+      quota,
       length,
       system,
     });
