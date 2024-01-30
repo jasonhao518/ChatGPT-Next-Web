@@ -168,7 +168,7 @@ export function FolderConfig(props: {
   };
 
   const globalConfig = useAppConfig();
-
+  const navigate = useNavigate();
   return (
     <>
       <List>
@@ -223,7 +223,18 @@ export function FolderConfig(props: {
         {props.folder.files?.map((item) => {
           return (
             <p key={item.id}>
-              <a target="_blank" href={item.url!}>
+              <a
+                onClick={() => {
+                  navigate(
+                    Path.Preview +
+                      "?folder=" +
+                      props.folder.id +
+                      "&ref=" +
+                      item.index +
+                      "-1",
+                  );
+                }}
+              >
                 {item.index}. {item.name}
               </a>
             </p>
