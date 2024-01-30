@@ -42,7 +42,7 @@ export const createEmptyFolder = () =>
     name: DEFAULT_TOPIC,
     context: [],
     syncGlobalConfig: true, // use global config as default
-    modelConfig: { ...useAppConfig.getState().folderModelConfig },
+    modelConfig: { ...useAppConfig.getState().modelConfig },
     lang: getLang(),
     isOwner: true,
     files: new Array<S3File>(),

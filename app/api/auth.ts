@@ -68,7 +68,6 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
       req.headers.set("Authorization", `Bearer ${systemApiKey}`);
       return {
         error: false,
-        system: true,
         key: systemApiKey,
       };
     } else {
@@ -80,7 +79,6 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
 
   return {
     error: false,
-    system: false,
     key: apiKey,
   };
 }
