@@ -326,7 +326,7 @@ export function PreviewPage() {
           <div className="window-header-title">
             <div className="window-header-main-title">{title}</div>
             <div className="window-header-submai-title">
-              {Locale.Mask.Page.SubTitle(allMasks.length)}
+              {pageNumber > 0 ? pageNumber : "1-10"}/{numPages}
             </div>
           </div>
 
