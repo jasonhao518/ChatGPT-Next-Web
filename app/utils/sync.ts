@@ -3,6 +3,7 @@ import {
   useAccessStore,
   useAppConfig,
   useChatStore,
+  useFolderStore,
 } from "../store";
 import { useMaskStore } from "../store/mask";
 import { usePromptStore } from "../store/prompt";
@@ -32,6 +33,7 @@ export type GetStoreState<T> = T extends { getState: () => infer U }
 
 const LocalStateSetters = {
   [StoreKey.Chat]: useChatStore.setState,
+  [StoreKey.Folder]: useFolderStore.setState,
   [StoreKey.Access]: useAccessStore.setState,
   [StoreKey.Config]: useAppConfig.setState,
   [StoreKey.Mask]: useMaskStore.setState,
@@ -40,6 +42,7 @@ const LocalStateSetters = {
 
 const LocalStateGetters = {
   [StoreKey.Chat]: () => getNonFunctionFileds(useChatStore.getState()),
+  [StoreKey.Folder]: () => getNonFunctionFileds(useFolderStore.getState()),
   [StoreKey.Access]: () => getNonFunctionFileds(useAccessStore.getState()),
   [StoreKey.Config]: () => getNonFunctionFileds(useAppConfig.getState()),
   [StoreKey.Mask]: () => getNonFunctionFileds(useMaskStore.getState()),
@@ -111,6 +114,13 @@ const MergeStates: StateMerger = {
     localState.masks = {
       ...remoteState.masks,
       ...localState.masks,
+    };
+    return localState;
+  },
+  [StoreKey.Folder]: (localState, remoteState) => {
+    localState.folders = {
+      ...remoteState.folders,
+      ...localState.folders,
     };
     return localState;
   },

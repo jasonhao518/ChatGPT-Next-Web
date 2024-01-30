@@ -237,6 +237,9 @@ const jp: PartialLocaleType = {
     Add: "追加",
   },
   Plugin: { Name: "プラグイン" },
+  Folder: {
+    Name: "フォルダ",
+  },
   FineTuned: { Sysmessage: "あなたはアシスタントです" },
   Mask: {
     Name: "キャラクタープリセット",

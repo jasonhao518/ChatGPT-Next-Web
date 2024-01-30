@@ -387,6 +387,9 @@ const cn = {
   Plugin: {
     Name: "插件",
   },
+  Folder: {
+    Name: "文件夹",
+  },
   FineTuned: {
     Sysmessage: "你是一个助手",
   },

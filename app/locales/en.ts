@@ -394,6 +394,9 @@ const en: LocaleType = {
   Plugin: {
     Name: "Plugin",
   },
+  Folder: {
+    Name: "Folder",
+  },
   FineTuned: {
     Sysmessage: "You are an assistant that",
   },
