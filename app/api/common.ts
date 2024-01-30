@@ -43,6 +43,7 @@ export async function logTransaction(
   data: any,
 ) {
   const token = await getToken({ req });
+  const length = req.headers.get("Content-Length");
   const transactionId = req.headers.get("x-transaction-id");
   if (token) {
     console.log(btoa(token.email!));
@@ -53,6 +54,7 @@ export async function logTransaction(
       user: token.email,
       date: new Date().toISOString(),
       type,
+      length,
       success,
       transactionId,
     };
