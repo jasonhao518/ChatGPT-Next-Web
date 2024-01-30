@@ -929,6 +929,7 @@ export function Settings() {
                   >
                     <input
                       type="checkbox"
+                      disabled
                       checked={accessStore.useCustomConfig}
                       onChange={(e) =>
                         accessStore.update(
