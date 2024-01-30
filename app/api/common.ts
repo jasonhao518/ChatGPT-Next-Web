@@ -191,10 +191,7 @@ export async function requestOpenai(req: NextRequest) {
   }
 }
 
-export async function requestLangchain(
-  req: NextRequest,
-  apiKey: string | undefined,
-) {
+export async function requestLangchain(req: NextRequest) {
   const controller = new AbortController();
 
   const timeoutId = setTimeout(
