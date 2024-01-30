@@ -71,162 +71,6 @@ export function FolderAvatar(props: { avatar: string; model?: ModelType }) {
   );
 }
 
-export function FolderConfig(props: {
-  folder: Folder;
-  updateFolder: Updater<Folder>;
-  extraListItems?: JSX.Element;
-  readonly?: boolean;
-  shouldSyncFromGlobal?: boolean;
-}) {
-  const [showPicker, setShowPicker] = useState(false);
-
-  const importFromFile = (id: string | undefined, updater: Updater<Folder>) => {
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "application/pdf";
-    const folder = props.folder.id;
-    const folderName = props.folder.name;
-    const fileId = uuidv4();
-    const index = props.folder.files.length + 1;
-    fileInput.onchange = (event: any) => {
-      const file = event.target.files[0];
-      fetch("/api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fileId,
-          index,
-          folder,
-          folderName,
-          filename: file?.name,
-          contentType: file?.type,
-        }),
-      }).then(async (response) => {
-        if (response.ok) {
-          const { url, fields } = await response.json();
-
-          const formData = new FormData();
-          let fileUrl: string | null = null;
-          Object.entries(fields).forEach(([key, value]) => {
-            formData.append(key, value as string);
-            if ("key" === key) {
-              fileUrl = url + value;
-            }
-          });
-          formData.append("file", file!);
-
-          fetch(url, {
-            method: "POST",
-            body: formData,
-          }).then((res) => {
-            if (res.status === 204) {
-              const file2: S3File = {
-                id: fileId,
-                index: index,
-                name: file.name,
-                url: fileUrl!,
-              };
-              updater((updater) => {
-                updater.files.push(file2);
-              });
-            } else {
-              alert("upload failed");
-              return null;
-            }
-          });
-        }
-      });
-    };
-
-    fileInput.click();
-  };
-
-  const updateConfig = (updater: (config: ModelConfig) => void) => {
-    if (props.readonly) return;
-
-    const config = { ...props.folder.modelConfig };
-    updater(config);
-    props.updateFolder((folder) => {
-      folder.modelConfig = config;
-      // if user changed current session mask, it will disable auto sync
-      folder.syncGlobalConfig = false;
-    });
-  };
-
-  const copyFolderLink = () => {
-    const folderLink = `${location.protocol}//${location.host}/#${Path.NewChat}?folder=${props.folder.id}`;
-    copyToClipboard(folderLink);
-  };
-
-  const globalConfig = useAppConfig();
-
-  return (
-    <>
-      <List>
-        <ListItem title={Locale.Mask.Config.Avatar}>
-          <Popover
-            content={
-              <AvatarPicker
-                onEmojiClick={(emoji) => {
-                  props.updateFolder((folder) => (folder.avatar = emoji));
-                  setShowPicker(false);
-                }}
-              ></AvatarPicker>
-            }
-            open={showPicker}
-            onClose={() => setShowPicker(false)}
-          >
-            <div
-              onClick={() => setShowPicker(true)}
-              style={{ cursor: "pointer" }}
-            >
-              <FolderAvatar
-                avatar={props.folder.avatar}
-                model={props.folder.modelConfig.model}
-              />
-            </div>
-          </Popover>
-        </ListItem>
-        <ListItem title={Locale.Mask.Config.Name}>
-          <input
-            type="text"
-            value={props.folder.name}
-            onInput={(e) =>
-              props.updateFolder((folder) => {
-                folder.name = e.currentTarget.value;
-              })
-            }
-          ></input>
-        </ListItem>
-      </List>
-      {props.folder.isOwner && (
-        <IconButton
-          icon={<UploadIcon />}
-          text={Locale.UI.Import}
-          key="import"
-          bordered
-          onClick={() => {
-            importFromFile(props.folder.id, props.updateFolder);
-          }}
-        />
-      )}
-      <div>
-        {props.folder.files?.map((item) => {
-          return (
-            <p key={item.id}>
-              <a target="_blank" href={item.url!}>
-                {item.index}. {item.name}
-              </a>
-            </p>
-          );
-        })}
-      </div>
-    </>
-  );
-}
-
 function ContextPromptItem(props: {
   index: number;
   prompt: ChatMessage;
@@ -417,7 +261,8 @@ export function PreviewPage() {
             .files.filter((f) => ref.startsWith(f.index + "-"));
           if (files && files.length > 0) {
             setTitle(files[0].name);
-            setPageNumber(parseInt(ref.substring(ref.indexOf("-") + 1)));
+            if (!ref.endsWith("-"))
+              setPageNumber(parseInt(ref.substring(ref.indexOf("-") + 1)));
             const response = await fetch(files[0].url);
             const blob = await response.blob();
             setFile(blob);
@@ -498,11 +343,17 @@ export function PreviewPage() {
 
         <div className={styles["mask-page-body"]}>
           <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
-            <Page
-              renderTextLayer={false}
-              renderAnnotationLayer={false}
-              pageNumber={pageNumber}
-            />
+            {pageNumber > 0 && (
+              <Page
+                renderTextLayer={false}
+                renderAnnotationLayer={false}
+                pageNumber={pageNumber}
+              />
+            )}
+            {pageNumber == 0 &&
+              Array.from(new Array(numPages), (el, index) => (
+                <Page key={`page_${index + 1}`} pageNumber={index + 1} />
+              ))}
           </Document>
         </div>
       </div>

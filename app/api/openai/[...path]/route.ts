@@ -56,9 +56,10 @@ async function handle(
     );
   }
   const folder = req.headers.get("Folder");
-  const quota = await getQuota(req, folder ? Quota.Folder : Quota.OpenAI);
+  const type = folder ? Quota.Folder : Quota.OpenAI;
+  const quota = await getQuota(req, type);
   if (quota <= 0) {
-    await logTransaction(req, Quota.OpenAI, false, {
+    await logTransaction(req, type, false, {
       error: {
         message: "NO_QUOTA",
       },
@@ -67,7 +68,7 @@ async function handle(
   }
   const authResult = auth(req, ModelProvider.GPT);
   if (authResult.error) {
-    await logTransaction(req, Quota.OpenAI, false, {
+    await logTransaction(req, type, false, {
       error: {
         message: "AUTH_ERROR",
       },
@@ -95,7 +96,7 @@ async function handle(
       });
     }
     const model = response.headers.get("openai-model");
-    await logTransaction(req, Quota.OpenAI, true, {
+    await logTransaction(req, type, true, {
       model,
       subpath,
       folder,
@@ -106,7 +107,7 @@ async function handle(
     return response;
   } catch (error: any) {
     console.error("[OpenAI] ", error);
-    await logTransaction(req, Quota.OpenAI, false, {
+    await logTransaction(req, type, false, {
       ...error,
       subpath,
       folder,
