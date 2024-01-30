@@ -34,7 +34,7 @@ async function handle(
 
   if (!ALLOWD_PATH.has(subpath)) {
     console.log("[OpenAI Route] forbidden path ", subpath);
-    logTransaction(req, Quota.OpenAI, false, {
+    await logTransaction(req, Quota.OpenAI, false, {
       error: {
         message: "FORBIDDEN_PATH",
       },
@@ -53,7 +53,7 @@ async function handle(
 
   const authResult = auth(req, ModelProvider.GPT);
   if (authResult.error) {
-    logTransaction(req, Quota.OpenAI, false, {
+    await logTransaction(req, Quota.OpenAI, false, {
       error: {
         message: "AUTH_ERROR",
       },
@@ -82,11 +82,16 @@ async function handle(
       });
     }
     const model = response.headers.get("openai-model");
-    logTransaction(req, Quota.OpenAI, true, { model, subpath, folder, system });
+    await logTransaction(req, Quota.OpenAI, true, {
+      model,
+      subpath,
+      folder,
+      system,
+    });
     return response;
   } catch (error: any) {
     console.error("[OpenAI] ", error);
-    logTransaction(req, Quota.OpenAI, false, {
+    await logTransaction(req, Quota.OpenAI, false, {
       ...error,
       subpath,
       folder,
