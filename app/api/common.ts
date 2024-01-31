@@ -118,7 +118,7 @@ export async function requestOpenai(req: NextRequest) {
   };
 
   const quota = await getQuota(req);
-  const customModels = getCustomModels(quota.gpt4 == null || quota.gpt4 === 0);
+  const customModels = getCustomModels(!quota.gpt4 || quota.gpt4 === 0);
   // #1815 try to refuse gpt4 request
   if (customModels && req.body) {
     try {

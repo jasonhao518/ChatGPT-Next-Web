@@ -22,11 +22,10 @@ declare global {
 
 async function handle(req: NextRequest) {
   const gpt4 = (await getQuota(req)).gpt4;
-
   return NextResponse.json({
     needCode: serverConfig.needCode,
     hideUserApiKey: serverConfig.hideUserApiKey,
-    disableGPT4: gpt4 === 0,
+    disableGPT4: !gpt4 || gpt4 === 0,
     hideBalanceQuery: serverConfig.hideBalanceQuery,
     disableFastLink: serverConfig.disableFastLink,
     customModels: getCustomModels(gpt4 === 0),
