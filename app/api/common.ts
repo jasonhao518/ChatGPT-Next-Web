@@ -4,16 +4,6 @@ import { DEFAULT_MODELS, OPENAI_BASE_URL, GEMINI_BASE_URL } from "../constant";
 import { collectModelTable } from "../utils/model";
 import { makeAzurePath } from "../azure";
 import { getToken } from "next-auth/jwt";
-import { kv } from "@vercel/kv";
-import { Kafka } from "@upstash/kafka";
-
-const kafka = new Kafka({
-  url: process.env.KAFKA_URL!,
-  username: process.env.KAFKA_USERNAME!,
-  password: process.env.KAFKA_PASSWORD!,
-});
-
-const p = kafka.producer();
 
 const serverConfig = getServerSideConfig();
 
