@@ -28,7 +28,7 @@ async function handle(req: NextRequest) {
     disableGPT4: !gpt4 || gpt4 === 0,
     hideBalanceQuery: serverConfig.hideBalanceQuery,
     disableFastLink: serverConfig.disableFastLink,
-    customModels: getCustomModels(gpt4 === 0),
+    customModels: getCustomModels(!gpt4 || gpt4 === 0),
   });
 }
 
