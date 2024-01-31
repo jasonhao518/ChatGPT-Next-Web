@@ -15,10 +15,22 @@ export function createUpstashClient(store: SyncStore) {
   const proxyUrl =
     store.useProxy && store.proxyUrl.length > 0 ? store.proxyUrl : undefined;
 
+  const localFetch = async (
+    url: string,
+    options: RequestInit & {
+      proxyUrl?: string;
+    },
+  ) => {
+    if (store.useProxy) {
+      return corsFetch(url, options);
+    } else {
+      return fetch(url, options);
+    }
+  };
   return {
     async check() {
       try {
-        const res = await corsFetch(this.path(`get/${storeKey}`), {
+        const res = await localFetch(this.path(`${storeKey}`), {
           method: "GET",
           headers: this.headers(),
           proxyUrl,
@@ -32,7 +44,7 @@ export function createUpstashClient(store: SyncStore) {
     },
 
     async redisGet(key: string) {
-      const res = await corsFetch(this.path(`get/${key}`), {
+      const res = await localFetch(this.path(`${key}`), {
         method: "GET",
         headers: this.headers(),
         proxyUrl,
@@ -45,7 +57,7 @@ export function createUpstashClient(store: SyncStore) {
     },
 
     async redisSet(key: string, value: string) {
-      const res = await corsFetch(this.path(`set/${key}`), {
+      const res = await localFetch(this.path(`${key}`), {
         method: "POST",
         headers: this.headers(),
         body: value,
@@ -87,7 +99,7 @@ export function createUpstashClient(store: SyncStore) {
     path(path: string) {
       let url = config.endpoint;
 
-      if (!url.endsWith("/")) {
+      if (url != null && !url.endsWith("/")) {
         url += "/";
       }
 

@@ -1,10 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSideConfig } from "../config/server";
+import { getCustomModels, getServerSideConfig } from "../config/server";
 import { DEFAULT_MODELS, OPENAI_BASE_URL, GEMINI_BASE_URL } from "../constant";
 import { collectModelTable } from "../utils/model";
 import { makeAzurePath } from "../azure";
+import { getToken } from "next-auth/jwt";
+import { kv } from "@vercel/kv";
+import { Kafka } from "@upstash/kafka";
+
+const kafka = new Kafka({
+  url: process.env.KAFKA_URL!,
+  username: process.env.KAFKA_USERNAME!,
+  password: process.env.KAFKA_PASSWORD!,
+});
+
+const p = kafka.producer();
 
 const serverConfig = getServerSideConfig();
+
+export async function getQuota(req: NextRequest): Promise<any> {
+  const token = await getToken({ req });
+  if (token) {
+    try {
+      const response = await fetch(process.env.QUOTA_URL! + token.email, {
+        method: "GET", // *GET, POST, PUT, DELETE, etc.
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        headers: {
+          "Content-Type": "application/json",
+          "X-Token": process.env.API_TOKEN!,
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      return response.json();
+    } catch (error) {
+      return {};
+    }
+  } else {
+    return {};
+  }
+}
 
 export async function requestOpenai(req: NextRequest) {
   const controller = new AbortController();
@@ -84,13 +117,12 @@ export async function requestOpenai(req: NextRequest) {
     signal: controller.signal,
   };
 
+  const quota = await getQuota(req);
+  const customModels = getCustomModels(quota.gpt4 == null || quota.gpt4 === 0);
   // #1815 try to refuse gpt4 request
-  if (serverConfig.customModels && req.body) {
+  if (customModels && req.body) {
     try {
-      const modelTable = collectModelTable(
-        DEFAULT_MODELS,
-        serverConfig.customModels,
-      );
+      const modelTable = collectModelTable(DEFAULT_MODELS, customModels);
       const clonedBody = await req.text();
       fetchOptions.body = clonedBody;
 

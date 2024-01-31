@@ -1,4 +1,5 @@
 import { getClientConfig } from "../config/client";
+import { v4 as uuidv4 } from "uuid";
 import {
   ACCESS_CODE_PREFIX,
   Azure,
@@ -143,8 +144,9 @@ export function getHeaders() {
   const accessStore = useAccessStore.getState();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "x-transaction-id": uuidv4(),
     "x-requested-with": "XMLHttpRequest",
-    "Accept": "application/json",
+    Accept: "application/json",
   };
   const modelConfig = useChatStore.getState().currentSession().mask.modelConfig;
   const isGoogle = modelConfig.model === "gemini-pro";

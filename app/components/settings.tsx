@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 
 import styles from "./settings.module.scss";
-
+import { signOut } from "next-auth/react";
 import ResetIcon from "../icons/reload.svg";
 import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
@@ -260,6 +260,20 @@ function DangerItems() {
           type="danger"
         />
       </ListItem>
+      <ListItem
+        title={Locale.Settings.Danger.Clear.Title}
+        subTitle={Locale.Settings.Danger.Clear.SubTitle}
+      >
+        <IconButton
+          text={"Sign Out"}
+          onClick={async () => {
+            if (await showConfirm(Locale.Settings.Danger.Clear.Confirm)) {
+              signOut();
+            }
+          }}
+          type="danger"
+        />
+      </ListItem>
     </List>
   );
 }
@@ -503,13 +517,6 @@ function SyncItems() {
           }
         >
           <div style={{ display: "flex" }}>
-            <IconButton
-              icon={<ConfigIcon />}
-              text={Locale.UI.Config}
-              onClick={() => {
-                setShowSyncConfigModal(true);
-              }}
-            />
             {couldSync && (
               <IconButton
                 icon={<ResetIcon />}
@@ -550,10 +557,6 @@ function SyncItems() {
           </div>
         </ListItem>
       </List>
-
-      {showSyncConfigModal && (
-        <SyncConfigModal onClose={() => setShowSyncConfigModal(false)} />
-      )}
     </>
   );
 }
@@ -926,6 +929,7 @@ export function Settings() {
                   >
                     <input
                       type="checkbox"
+                      disabled
                       checked={accessStore.useCustomConfig}
                       onChange={(e) =>
                         accessStore.update(

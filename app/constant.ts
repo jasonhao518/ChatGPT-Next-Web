@@ -8,7 +8,7 @@ export const FETCH_COMMIT_URL = `https://api.github.com/repos/${OWNER}/${REPO}/c
 export const FETCH_TAG_URL = `https://api.github.com/repos/${OWNER}/${REPO}/tags?per_page=1`;
 export const RUNTIME_CONFIG_DOM = "danger-runtime-config";
 
-export const DEFAULT_CORS_HOST = "https://a.nextweb.fun";
+export const DEFAULT_CORS_HOST = `https://app.${process.env.ROOT_DOMAIN}`;
 export const DEFAULT_API_HOST = `${DEFAULT_CORS_HOST}/api/proxy`;
 export const OPENAI_BASE_URL = "https://api.openai.com";
 
@@ -21,6 +21,11 @@ export enum Path {
   NewChat = "/new-chat",
   Masks = "/masks",
   Auth = "/auth",
+}
+
+export enum Quota {
+  GPT4 = "gpt4",
+  CREDIT = "credit",
 }
 
 export enum ApiPath {
@@ -77,8 +82,6 @@ export enum ModelProvider {
 
 export const OpenaiPath = {
   ChatPath: "v1/chat/completions",
-  UsagePath: "dashboard/billing/usage",
-  SubsPath: "dashboard/billing/subscription",
   ListModelPath: "v1/models",
 };
 
