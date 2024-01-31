@@ -4,7 +4,7 @@ import { ModelProvider, OpenaiPath } from "@/app/constant";
 import { prettyObject } from "@/app/utils/format";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../auth";
-import { requestOpenai } from "../../common";
+import { getQuota, requestOpenai } from "../../common";
 
 const ALLOWD_PATH = new Set(Object.values(OpenaiPath));
 
@@ -44,7 +44,17 @@ async function handle(
       },
     );
   }
-
+  const quota = await getQuota(req);
+  if (!quota.hasCredit || quota.hasCredit === 0) {
+    return NextResponse.json(
+      {
+        error: "No enough credit",
+      },
+      {
+        status: 401,
+      },
+    );
+  }
   const authResult = auth(req, ModelProvider.GPT);
   if (authResult.error) {
     return NextResponse.json(authResult, {
