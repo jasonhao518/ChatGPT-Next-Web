@@ -63,7 +63,7 @@ async function handle(
   }
 
   try {
-    const response = await requestOpenai(req);
+    const response = await requestOpenai(req, !quota.gpt4 || quota.gpt4 === 0);
 
     // list models
     if (subpath === OpenaiPath.ListModelPath && response.status === 200) {

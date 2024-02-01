@@ -29,7 +29,7 @@ export async function getQuota(req: NextRequest): Promise<any> {
   }
 }
 
-export async function requestOpenai(req: NextRequest) {
+export async function requestOpenai(req: NextRequest, gpt4: boolean) {
   const controller = new AbortController();
 
   var authValue,
@@ -107,8 +107,7 @@ export async function requestOpenai(req: NextRequest) {
     signal: controller.signal,
   };
 
-  const quota = await getQuota(req);
-  const customModels = getCustomModels(!quota.gpt4 || quota.gpt4 === 0);
+  const customModels = getCustomModels(gpt4);
   // #1815 try to refuse gpt4 request
   if (customModels && req.body) {
     try {
