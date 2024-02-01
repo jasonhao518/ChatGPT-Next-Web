@@ -93,6 +93,7 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "no-store",
+      "X-Token": process.env.API_TOKEN!,
       [authHeaderName]: authValue,
       ...(serverConfig.openaiOrgId && {
         "OpenAI-Organization": serverConfig.openaiOrgId,
