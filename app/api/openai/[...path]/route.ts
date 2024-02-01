@@ -45,7 +45,7 @@ async function handle(
     );
   }
   const quota = await getQuota(req);
-  if (!quota.hasCredit || quota.hasCredit === 0) {
+  if (!quota.credit || quota.credit === 0) {
     return NextResponse.json(
       {
         error: "No enough credit",
