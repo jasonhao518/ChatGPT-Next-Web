@@ -87,17 +87,12 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
     }
     path = makeAzurePath(path, serverConfig.azureApiVersion);
   }
-
+  const headers = req.headers;
   const fetchUrl = `${baseUrl}/${path}`;
   const fetchOptions: RequestInit = {
     headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store",
+      ...headers,
       "X-Token": process.env.API_TOKEN!,
-      [authHeaderName]: authValue,
-      ...(serverConfig.openaiOrgId && {
-        "OpenAI-Organization": serverConfig.openaiOrgId,
-      }),
     },
     method: req.method,
     body: req.body,
