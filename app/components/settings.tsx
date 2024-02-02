@@ -261,13 +261,13 @@ function DangerItems() {
         />
       </ListItem>
       <ListItem
-        title={Locale.Settings.Danger.Clear.Title}
-        subTitle={Locale.Settings.Danger.Clear.SubTitle}
+        title={Locale.Settings.Danger.SignOut.Title}
+        subTitle={Locale.Settings.Danger.SignOut.SubTitle}
       >
         <IconButton
           text={"Sign Out"}
           onClick={async () => {
-            if (await showConfirm(Locale.Settings.Danger.Clear.Confirm)) {
+            if (await showConfirm(Locale.Settings.Danger.SignOut.Confirm)) {
               signOut();
             }
           }}

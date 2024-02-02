@@ -137,6 +137,11 @@ const en: LocaleType = {
         Action: "Reset",
         Confirm: "Confirm to reset all settings to default?",
       },
+      SignOut: {
+        Title: "Sign Out",
+        SubTitle: "Chat history will not be cleaned after sign out",
+        Confirm: "Confirm to sign out？",
+      },
       Clear: {
         Title: "Clear All Data",
         SubTitle: "Clear all messages and settings",
