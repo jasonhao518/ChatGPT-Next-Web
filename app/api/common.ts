@@ -88,13 +88,15 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
     path = makeAzurePath(path, serverConfig.azureApiVersion);
   }
   const headers = req.headers;
-  console.log(headers);
   const fetchUrl = `${baseUrl}/${path}`;
   const token = await getToken({ req });
   const fetchOptions: RequestInit = {
     headers: {
-      ...headers,
-      user: token?.sub,
+      "x-transaction-id": headers.get("x-transaction-id")!,
+      "User-Agent": headers.get("User-Agent")!,
+      user: token?.sub!,
+      "X-Vercel-IP-Country": headers.get("X-Vercel-IP-Country")!,
+      "X-Vercel-IP-City": headers.get("X-Vercel-IP-City")!,
       "X-Token": process.env.API_TOKEN!,
     },
     method: req.method,
