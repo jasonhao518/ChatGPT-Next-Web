@@ -5,6 +5,8 @@ import { collectModelTable } from "../utils/model";
 import { makeAzurePath } from "../azure";
 import { getToken } from "next-auth/jwt";
 
+const secret = process.env.NEXTAUTH_SECRET;
+
 const serverConfig = getServerSideConfig();
 
 export async function getQuota(req: NextRequest): Promise<any> {
@@ -89,12 +91,12 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
   }
   const headers = req.headers;
   const fetchUrl = `${baseUrl}/${path}`;
-  const token = await getToken({ req });
+  const token = (await getToken({ req, secret })) as any;
   const fetchOptions: RequestInit = {
     headers: {
       "x-transaction-id": headers.get("x-transaction-id")!,
       "User-Agent": headers.get("User-Agent")!,
-      User: token?.sub!,
+      User: token?.id!,
       "X-Vercel-IP-Country": headers.get("X-Vercel-IP-Country")!,
       "X-Vercel-IP-City": headers.get("X-Vercel-IP-City")!,
       "X-Token": process.env.API_TOKEN!,
