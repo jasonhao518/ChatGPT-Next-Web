@@ -94,6 +94,8 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
   const token = (await getToken({ req, secret })) as any;
   const fetchOptions: RequestInit = {
     headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
       "x-transaction-id": headers.get("x-transaction-id")!,
       "User-Agent": headers.get("User-Agent")!,
       "X-User": token?.id!,
