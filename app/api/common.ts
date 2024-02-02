@@ -89,9 +89,11 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
   }
   const headers = req.headers;
   const fetchUrl = `${baseUrl}/${path}`;
+  const token = await getToken({ req });
   const fetchOptions: RequestInit = {
     headers: {
       ...headers,
+      user: token?.sub,
       "X-Token": process.env.API_TOKEN!,
     },
     method: req.method,
