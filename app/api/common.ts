@@ -88,6 +88,7 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
     path = makeAzurePath(path, serverConfig.azureApiVersion);
   }
   const headers = req.headers;
+  console.log(headers);
   const fetchUrl = `${baseUrl}/${path}`;
   const token = await getToken({ req });
   const fetchOptions: RequestInit = {
