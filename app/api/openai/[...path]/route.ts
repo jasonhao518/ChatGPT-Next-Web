@@ -45,7 +45,17 @@ async function handle(
     );
   }
   const quota = await getQuota(req);
-  if (!quota.credit || quota.credit === 0) {
+  if (!quota.rate && quota.rate <= 0) {
+    return NextResponse.json(
+      {
+        error: "Over rate limit",
+      },
+      {
+        status: 403,
+      },
+    );
+  }
+  if (!quota.credit || quota.credit <= 0) {
     return NextResponse.json(
       {
         error: "No enough credit",
