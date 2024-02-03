@@ -95,6 +95,7 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
   const fetchOptions: RequestInit = {
     headers: {
       "Content-Type": "application/json",
+      "X-Token": process.env.API_TOKEN!,
     },
     method: req.method,
     body: req.body,
