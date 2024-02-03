@@ -95,7 +95,6 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
   const fetchOptions: RequestInit = {
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "no-store",
     },
     method: req.method,
     body: req.body,
