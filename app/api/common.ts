@@ -96,7 +96,7 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "no-store",
-      "x-transaction-id": headers.get("x-transaction-id")!,
+      "X-Transaction-Id": headers.get("X-Transaction-Id")!,
       "User-Agent": headers.get("User-Agent")!,
       "X-User": token?.id!,
       "X-Vercel-IP-Country": headers.get("X-Vercel-IP-Country")!,

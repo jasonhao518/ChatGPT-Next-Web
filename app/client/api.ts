@@ -144,7 +144,7 @@ export function getHeaders() {
   const accessStore = useAccessStore.getState();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "x-transaction-id": uuidv4(),
+    "X-Transaction-Id": uuidv4(),
     "x-requested-with": "XMLHttpRequest",
     Accept: "application/json",
   };
