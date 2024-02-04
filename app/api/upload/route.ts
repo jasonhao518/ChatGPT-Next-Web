@@ -10,6 +10,14 @@ export async function POST(req: NextRequest) {
   const { fileId, index, folder, folderName, filename, size, contentType } =
     await req.json();
   try {
+    if (size > 20971520) {
+      return NextResponse.json(
+        { error: "Fize size limit is 20M" },
+        {
+          status: 400,
+        },
+      );
+    }
     const client = new S3Client({ region: process.env.AWS_REGION });
     const { url, fields } = await createPresignedPost(client, {
       Bucket: process.env.AWS_BUCKET_NAME!,
