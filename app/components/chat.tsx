@@ -118,13 +118,15 @@ const TagWithTooltip = ({
           {tooltipText}
           <button
             onClick={() => {
-              navigate(
-                Path.Preview +
-                  "?folder=" +
-                  folder +
-                  "&ref=" +
-                  tagText.substring(1, tagText.length - 1),
-              );
+              let ref = tagText;
+              if (tagText.startsWith("[")) {
+                ref = ref.substring(1);
+              }
+              if (tagText.endsWith("]")) {
+                ref = ref.substring(0, ref.length - 1);
+              }
+
+              navigate(Path.Preview + "?folder=" + folder + "&ref=" + ref);
             }}
           >
             {"details"}
