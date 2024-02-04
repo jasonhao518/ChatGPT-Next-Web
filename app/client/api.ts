@@ -149,6 +149,8 @@ export function getHeaders() {
     Accept: "application/json",
   };
   const modelConfig = useChatStore.getState().currentSession().mask.modelConfig;
+  const folder = useChatStore.getState().currentSession().folder;
+
   const isGoogle = modelConfig.model === "gemini-pro";
   const isAzure = accessStore.provider === ServiceProvider.Azure;
   const authHeader = isAzure ? "api-key" : "Authorization";
@@ -172,6 +174,11 @@ export function getHeaders() {
       ACCESS_CODE_PREFIX + accessStore.accessCode,
     );
   }
-
+  if (folder.id !== "") {
+    headers["X-Folder"] = folder.id;
+  }
+  if (folder.selectedFile != null) {
+    headers["X-File"] = folder.selectedFile.id;
+  }
   return headers;
 }

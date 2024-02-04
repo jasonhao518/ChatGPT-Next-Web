@@ -50,7 +50,7 @@ export const useSyncStore = createPersistStore(
   (set, get) => ({
     coundSync() {
       const config = get()[get().provider];
-      return Object.values(config).every((c) => c.toString().length > 0);
+      return Object.values(config).every((c) => true);
     },
 
     markSyncTime() {

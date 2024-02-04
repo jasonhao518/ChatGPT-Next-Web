@@ -17,9 +17,11 @@ export const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/";
 export enum Path {
   Home = "/",
   Chat = "/chat",
+  Preview = "/preview",
   Settings = "/settings",
   NewChat = "/new-chat",
   Masks = "/masks",
+  Folders = "/folders",
   Auth = "/auth",
 }
 
@@ -45,6 +47,7 @@ export enum FileName {
 
 export enum StoreKey {
   Chat = "chat-next-web-store",
+  Folder = "folder",
   Access = "access-control",
   Config = "app-config",
   Mask = "mask-store",

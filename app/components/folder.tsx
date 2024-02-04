@@ -1,19 +1,18 @@
 import { IconButton } from "./button";
 import { ErrorBoundary } from "./error";
+import { S3File } from "../store/folder";
+import styles from "./folder.module.scss";
 
-import styles from "./mask.module.scss";
-
-import DownloadIcon from "../icons/download.svg";
-import UploadIcon from "../icons/upload.svg";
 import EditIcon from "../icons/edit.svg";
 import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
 import DeleteIcon from "../icons/delete.svg";
 import EyeIcon from "../icons/eye.svg";
-import CopyIcon from "../icons/copy.svg";
+import UploadIcon from "../icons/upload.svg";
 import DragIcon from "../icons/drag.svg";
+import { v4 as uuidv4 } from "uuid";
 
-import { DEFAULT_MASK_AVATAR, Mask, useMaskStore } from "../store/mask";
+import { DEFAULT_FOLDER_AVATAR, Folder, useFolderStore } from "../store/folder";
 import {
   ChatMessage,
   createMessage,
@@ -31,6 +30,7 @@ import {
   Popover,
   Select,
   showConfirm,
+  showToast,
 } from "./ui-lib";
 import { Avatar, AvatarPicker } from "./emoji";
 import Locale, { AllLangs, ALL_LANG_OPTIONS, Lang } from "../locales";
@@ -42,7 +42,7 @@ import { copyToClipboard, downloadAs, readFromFile } from "../utils";
 import { Updater } from "../typing";
 import { ModelConfigList } from "./model-config";
 import { FileName, Path } from "../constant";
-import { BUILTIN_MASK_STORE } from "../masks";
+import { BUILTIN_FOLDER_STORE } from "../folders";
 import { nanoid } from "nanoid";
 import {
   DragDropContext,
@@ -59,60 +59,125 @@ function reorder<T>(list: T[], startIndex: number, endIndex: number): T[] {
   return result;
 }
 
-export function MaskAvatar(props: { avatar: string; model?: ModelType }) {
-  return props.avatar !== DEFAULT_MASK_AVATAR ? (
+export function FolderAvatar(props: { avatar: string; model?: ModelType }) {
+  return props.avatar !== DEFAULT_FOLDER_AVATAR ? (
     <Avatar avatar={props.avatar} />
   ) : (
     <Avatar model={props.model} />
   );
 }
 
-export function MaskConfig(props: {
-  mask: Mask;
-  updateMask: Updater<Mask>;
+export function FolderConfig(props: {
+  folder: Folder;
+  updateFolder: Updater<Folder>;
   extraListItems?: JSX.Element;
   readonly?: boolean;
   shouldSyncFromGlobal?: boolean;
 }) {
   const [showPicker, setShowPicker] = useState(false);
 
+  const importFromFile = (id: string | undefined, updater: Updater<Folder>) => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "application/pdf";
+    const folder = props.folder.id;
+    const folderName = props.folder.name;
+    const fileId = uuidv4();
+    const index = props.folder.files.length + 1;
+    fileInput.onchange = (event: any) => {
+      const file = event.target.files[0];
+      const size = file.size;
+      fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-transaction-id": uuidv4(),
+        },
+        body: JSON.stringify({
+          fileId,
+          index,
+          size,
+          folder,
+          folderName,
+          filename: file?.name,
+          contentType: file?.type,
+        }),
+      }).then(async (response) => {
+        if (response.ok) {
+          const { url, fields } = await response.json();
+
+          const formData = new FormData();
+          let fileUrl: string | null = null;
+          Object.entries(fields).forEach(([key, value]) => {
+            formData.append(key, value as string);
+            if ("key" === key) {
+              fileUrl = url + value;
+            }
+          });
+          formData.append("file", file!);
+
+          fetch(url, {
+            method: "POST",
+            body: formData,
+          }).then((res) => {
+            if (res.status === 204) {
+              const file2: S3File = {
+                id: fileId,
+                index: index,
+                name: file.name,
+                url: fileUrl!,
+              };
+              updater((updater) => {
+                updater.files.push(file2);
+              });
+            } else {
+              alert("upload failed");
+              return null;
+            }
+          });
+        } else {
+          const { error } = await response.json();
+          if ("NO_QUOTA" === error) {
+            // TODO use localise error message
+            showToast(error);
+          } else {
+            showToast(error);
+          }
+        }
+      });
+    };
+
+    fileInput.click();
+  };
+
   const updateConfig = (updater: (config: ModelConfig) => void) => {
     if (props.readonly) return;
 
-    const config = { ...props.mask.modelConfig };
+    const config = { ...props.folder.modelConfig };
     updater(config);
-    props.updateMask((mask) => {
-      mask.modelConfig = config;
+    props.updateFolder((folder) => {
+      folder.modelConfig = config;
       // if user changed current session mask, it will disable auto sync
-      mask.syncGlobalConfig = false;
+      folder.syncGlobalConfig = false;
     });
   };
 
-  const copyMaskLink = () => {
-    const maskLink = `${location.protocol}//${location.host}/#${Path.NewChat}?mask=${props.mask.id}`;
-    copyToClipboard(maskLink);
+  const copyFolderLink = () => {
+    const folderLink = `${location.protocol}//${location.host}/#${Path.NewChat}?folder=${props.folder.id}`;
+    copyToClipboard(folderLink);
   };
 
   const globalConfig = useAppConfig();
-
+  const navigate = useNavigate();
   return (
     <>
-      <ContextPrompts
-        context={props.mask.context}
-        updateContext={(updater) => {
-          const context = props.mask.context.slice();
-          updater(context);
-          props.updateMask((mask) => (mask.context = context));
-        }}
-      />
-
       <List>
         <ListItem title={Locale.Mask.Config.Avatar}>
           <Popover
             content={
               <AvatarPicker
                 onEmojiClick={(emoji) => {
-                  props.updateMask((mask) => (mask.avatar = emoji));
+                  props.updateFolder((folder) => (folder.avatar = emoji));
                   setShowPicker(false);
                 }}
               ></AvatarPicker>
@@ -124,9 +189,9 @@ export function MaskConfig(props: {
               onClick={() => setShowPicker(true)}
               style={{ cursor: "pointer" }}
             >
-              <MaskAvatar
-                avatar={props.mask.avatar}
-                model={props.mask.modelConfig.model}
+              <FolderAvatar
+                avatar={props.folder.avatar}
+                model={props.folder.modelConfig.model}
               />
             </div>
           </Popover>
@@ -134,78 +199,48 @@ export function MaskConfig(props: {
         <ListItem title={Locale.Mask.Config.Name}>
           <input
             type="text"
-            value={props.mask.name}
+            value={props.folder.name}
             onInput={(e) =>
-              props.updateMask((mask) => {
-                mask.name = e.currentTarget.value;
+              props.updateFolder((folder) => {
+                folder.name = e.currentTarget.value;
               })
             }
           ></input>
         </ListItem>
-        <ListItem
-          title={Locale.Mask.Config.HideContext.Title}
-          subTitle={Locale.Mask.Config.HideContext.SubTitle}
-        >
-          <input
-            type="checkbox"
-            checked={props.mask.hideContext}
-            onChange={(e) => {
-              props.updateMask((mask) => {
-                mask.hideContext = e.currentTarget.checked;
-              });
-            }}
-          ></input>
-        </ListItem>
-
-        {!props.shouldSyncFromGlobal ? (
-          <ListItem
-            title={Locale.Mask.Config.Share.Title}
-            subTitle={Locale.Mask.Config.Share.SubTitle}
-          >
-            <IconButton
-              icon={<CopyIcon />}
-              text={Locale.Mask.Config.Share.Action}
-              onClick={copyMaskLink}
-            />
-          </ListItem>
-        ) : null}
-
-        {props.shouldSyncFromGlobal ? (
-          <ListItem
-            title={Locale.Mask.Config.Sync.Title}
-            subTitle={Locale.Mask.Config.Sync.SubTitle}
-          >
-            <input
-              type="checkbox"
-              checked={props.mask.syncGlobalConfig}
-              onChange={async (e) => {
-                const checked = e.currentTarget.checked;
-                if (
-                  checked &&
-                  (await showConfirm(Locale.Mask.Config.Sync.Confirm))
-                ) {
-                  props.updateMask((mask) => {
-                    mask.syncGlobalConfig = checked;
-                    mask.modelConfig = { ...globalConfig.modelConfig };
-                  });
-                } else if (!checked) {
-                  props.updateMask((mask) => {
-                    mask.syncGlobalConfig = checked;
-                  });
-                }
-              }}
-            ></input>
-          </ListItem>
-        ) : null}
       </List>
-
-      <List>
-        <ModelConfigList
-          modelConfig={{ ...props.mask.modelConfig }}
-          updateConfig={updateConfig}
+      {props.folder.isOwner && (
+        <IconButton
+          icon={<UploadIcon />}
+          text={Locale.UI.Import}
+          key="import"
+          bordered
+          onClick={() => {
+            importFromFile(props.folder.id, props.updateFolder);
+          }}
         />
-        {props.extraListItems}
-      </List>
+      )}
+      <div>
+        {props.folder.files?.map((item) => {
+          return (
+            <p key={item.id}>
+              <a
+                onClick={() => {
+                  navigate(
+                    Path.Preview +
+                      "?folder=" +
+                      props.folder.id +
+                      "&ref=" +
+                      item.index +
+                      "-1",
+                  );
+                }}
+              >
+                {item.index}. {item.name}
+              </a>
+            </p>
+          );
+        })}
+      </div>
     </>
   );
 }
@@ -381,19 +416,19 @@ export function ContextPrompts(props: {
   );
 }
 
-export function MaskPage() {
+export function FolderPage() {
   const navigate = useNavigate();
 
-  const maskStore = useMaskStore();
+  const folderStore = useFolderStore();
   const chatStore = useChatStore();
 
   const [filterLang, setFilterLang] = useState<Lang>();
 
-  const allMasks = maskStore
+  const allMasks = folderStore
     .getAll()
     .filter((m) => !filterLang || m.lang === filterLang);
 
-  const [searchMasks, setSearchMasks] = useState<Mask[]>([]);
+  const [searchMasks, setSearchMasks] = useState<Folder[]>([]);
   const [searchText, setSearchText] = useState("");
   const masks = searchText.length > 0 ? searchMasks : allMasks;
 
@@ -412,31 +447,11 @@ export function MaskPage() {
 
   const [editingMaskId, setEditingMaskId] = useState<string | undefined>();
   const editingMask =
-    maskStore.get(editingMaskId) ?? BUILTIN_MASK_STORE.get(editingMaskId);
+    folderStore.get(editingMaskId) ?? BUILTIN_FOLDER_STORE.get(editingMaskId);
   const closeMaskModal = () => setEditingMaskId(undefined);
 
   const downloadAll = () => {
-    downloadAs(JSON.stringify(masks.filter((v) => !v.builtin)), FileName.Masks);
-  };
-
-  const importFromFile = () => {
-    readFromFile().then((content) => {
-      try {
-        const importMasks = JSON.parse(content);
-        if (Array.isArray(importMasks)) {
-          for (const mask of importMasks) {
-            if (mask.name) {
-              maskStore.create(mask);
-            }
-          }
-          return;
-        }
-        //if the content is a single mask.
-        if (importMasks.name) {
-          maskStore.create(importMasks);
-        }
-      } catch {}
-    });
+    downloadAs(JSON.stringify(masks.filter((v) => !v.isOwner)), FileName.Masks);
   };
 
   return (
@@ -453,22 +468,6 @@ export function MaskPage() {
           </div>
 
           <div className="window-actions">
-            <div className="window-action-button">
-              <IconButton
-                icon={<DownloadIcon />}
-                bordered
-                onClick={downloadAll}
-                text={Locale.UI.Export}
-              />
-            </div>
-            <div className="window-action-button">
-              <IconButton
-                icon={<UploadIcon />}
-                text={Locale.UI.Import}
-                bordered
-                onClick={() => importFromFile()}
-              />
-            </div>
             <div className="window-action-button">
               <IconButton
                 icon={<CloseIcon />}
@@ -488,27 +487,6 @@ export function MaskPage() {
               autoFocus
               onInput={(e) => onSearch(e.currentTarget.value)}
             />
-            <Select
-              className={styles["mask-filter-lang"]}
-              value={filterLang ?? Locale.Settings.Lang.All}
-              onChange={(e) => {
-                const value = e.currentTarget.value;
-                if (value === Locale.Settings.Lang.All) {
-                  setFilterLang(undefined);
-                } else {
-                  setFilterLang(value as Lang);
-                }
-              }}
-            >
-              <option key="all" value={Locale.Settings.Lang.All}>
-                {Locale.Settings.Lang.All}
-              </option>
-              {AllLangs.map((lang) => (
-                <option value={lang} key={lang}>
-                  {ALL_LANG_OPTIONS[lang]}
-                </option>
-              ))}
-            </Select>
 
             <IconButton
               className={styles["mask-create"]}
@@ -516,7 +494,7 @@ export function MaskPage() {
               text={Locale.Mask.Page.Create}
               bordered
               onClick={() => {
-                const createdMask = maskStore.create();
+                const createdMask = folderStore.create();
                 setEditingMaskId(createdMask.id);
               }}
             />
@@ -527,14 +505,15 @@ export function MaskPage() {
               <div className={styles["mask-item"]} key={m.id}>
                 <div className={styles["mask-header"]}>
                   <div className={styles["mask-icon"]}>
-                    <MaskAvatar avatar={m.avatar} model={m.modelConfig.model} />
+                    <FolderAvatar
+                      avatar={m.avatar}
+                      model={m.modelConfig.model}
+                    />
                   </div>
                   <div className={styles["mask-title"]}>
                     <div className={styles["mask-name"]}>{m.name}</div>
                     <div className={styles["mask-info"] + " one-line"}>
-                      {`${Locale.Mask.Item.Info(m.context.length)} / ${
-                        ALL_LANG_OPTIONS[m.lang]
-                      } / ${m.modelConfig.model}`}
+                      {`${Locale.Mask.Item.Info(m.files?.length)} `}
                     </div>
                   </div>
                 </div>
@@ -543,11 +522,11 @@ export function MaskPage() {
                     icon={<AddIcon />}
                     text={Locale.Mask.Item.Chat}
                     onClick={() => {
-                      chatStore.newSession(m);
+                      chatStore.newSession2(m);
                       navigate(Path.Chat);
                     }}
                   />
-                  {m.builtin ? (
+                  {!m.isOwner ? (
                     <IconButton
                       icon={<EyeIcon />}
                       text={Locale.Mask.Item.View}
@@ -560,13 +539,13 @@ export function MaskPage() {
                       onClick={() => setEditingMaskId(m.id)}
                     />
                   )}
-                  {!m.builtin && (
+                  {m.isOwner && (
                     <IconButton
                       icon={<DeleteIcon />}
                       text={Locale.Mask.Item.Delete}
                       onClick={async () => {
                         if (await showConfirm(Locale.Mask.Item.DeleteConfirm)) {
-                          maskStore.delete(m.id);
+                          folderStore.delete(m.id);
                         }
                       }}
                     />
@@ -581,40 +560,16 @@ export function MaskPage() {
       {editingMask && (
         <div className="modal-mask">
           <Modal
-            title={Locale.Mask.EditModal.Title(editingMask?.builtin)}
+            title={Locale.Mask.EditModal.Title(!editingMask?.isOwner)}
             onClose={closeMaskModal}
-            actions={[
-              <IconButton
-                icon={<DownloadIcon />}
-                text={Locale.Mask.EditModal.Download}
-                key="export"
-                bordered
-                onClick={() =>
-                  downloadAs(
-                    JSON.stringify(editingMask),
-                    `${editingMask.name}.json`,
-                  )
-                }
-              />,
-              <IconButton
-                key="copy"
-                icon={<CopyIcon />}
-                bordered
-                text={Locale.Mask.EditModal.Clone}
-                onClick={() => {
-                  navigate(Path.Masks);
-                  maskStore.create(editingMask);
-                  setEditingMaskId(undefined);
-                }}
-              />,
-            ]}
+            actions={[]}
           >
-            <MaskConfig
-              mask={editingMask}
-              updateMask={(updater) =>
-                maskStore.updateMask(editingMaskId!, updater)
+            <FolderConfig
+              folder={editingMask}
+              updateFolder={(updater) =>
+                folderStore.updateFolder(editingMaskId!, updater)
               }
-              readonly={editingMask.builtin}
+              readonly={!editingMask.isOwner}
             />
           </Modal>
         </div>

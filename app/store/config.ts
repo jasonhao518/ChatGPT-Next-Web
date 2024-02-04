@@ -58,6 +58,20 @@ export const DEFAULT_CONFIG = {
     enableInjectSystemPrompts: true,
     template: DEFAULT_INPUT_TEMPLATE,
   },
+
+  folderModelConfig: {
+    model: "gpt-3.5-turbo-16k" as ModelType,
+    temperature: 0,
+    top_p: 1,
+    max_tokens: 4000,
+    presence_penalty: 0,
+    frequency_penalty: 0,
+    sendMemory: true,
+    historyMessageCount: 1,
+    compressMessageLengthThreshold: 1000,
+    enableInjectSystemPrompts: true,
+    template: DEFAULT_INPUT_TEMPLATE,
+  },
 };
 
 export type ChatConfig = typeof DEFAULT_CONFIG;

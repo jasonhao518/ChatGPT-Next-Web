@@ -4,7 +4,7 @@ import { ModelProvider, OpenaiPath } from "@/app/constant";
 import { prettyObject } from "@/app/utils/format";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../auth";
-import { getQuota, requestOpenai } from "../../common";
+import { getQuota, requestOpenai, requestLangchain } from "../../common";
 
 const ALLOWD_PATH = new Set(Object.values(OpenaiPath));
 
@@ -73,7 +73,10 @@ async function handle(
   }
 
   try {
-    const response = await requestOpenai(req, !quota.gpt4 || quota.gpt4 === 0);
+    const folder = req.headers.get("X-Folder");
+    const response = folder
+      ? await requestLangchain(req, !quota.gpt4 || quota.gpt4 === 0)
+      : await requestOpenai(req, !quota.gpt4 || quota.gpt4 === 0);
 
     // list models
     if (subpath === OpenaiPath.ListModelPath && response.status === 200) {

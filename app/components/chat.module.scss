@@ -395,6 +395,53 @@
   z-index: 1;
 }
 
+.chat-message-action-tag-container {
+  display: flex; /* Flexbox layout for inline arrangement of tags */
+  flex-wrap: wrap; /* Allows tags to wrap to the next line */
+  gap: 10px; /* Spacing between tags */
+  padding: 10px; /* Padding inside the container */
+  border: 1px solid #ddd; /* Optional: Border for the container */
+  border-radius: 5px; /* Optional: Rounded corners for the container */
+  margin-bottom: 20px; /* Space below the container */
+}
+
+.chat-message-action-tag {
+  display: inline-block;
+  background-color: #f0f0f0; /* Light grey background */
+  border: 1px solid #ddd; /* Light grey border */
+  border-radius: 5px; /* Rounded corners */
+  padding: 5px 10px; /* Padding */
+  font-size: 0.9em; /* Font size */
+  color: #333; /* Text color */
+  text-decoration: none; /* Removes underline from text */
+  cursor: pointer; /* Changes cursor on hover */
+  position: relative; /* Needed for absolute positioning of tooltip */
+}
+
+.chat-message-action-tag-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #555;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  z-index: 1;
+
+  /* For a small arrow under the tooltip */
+  &:after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #555 transparent transparent transparent;
+  }
+}
+
 .chat-message-user > .chat-message-container > .chat-message-item {
   background-color: var(--second);
 

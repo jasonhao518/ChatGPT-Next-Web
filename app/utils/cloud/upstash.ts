@@ -11,6 +11,7 @@ export function createUpstashClient(store: SyncStore) {
   const storeKey = config.username.length === 0 ? STORAGE_KEY : config.username;
   const chunkCountKey = `${storeKey}-chunk-count`;
   const chunkIndexKey = (i: number) => `${storeKey}-chunk-${i}`;
+  const useProxy = store.useProxy;
 
   const proxyUrl =
     store.useProxy && store.proxyUrl.length > 0 ? store.proxyUrl : undefined;
