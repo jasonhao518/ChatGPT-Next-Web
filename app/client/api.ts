@@ -174,10 +174,10 @@ export function getHeaders() {
       ACCESS_CODE_PREFIX + accessStore.accessCode,
     );
   }
-  if (folder.id !== "") {
+  if (folder?.id !== "") {
     headers["X-Folder"] = folder.id;
   }
-  if (folder.selectedFile != null) {
+  if (folder?.selectedFile != null) {
     headers["X-File"] = folder.selectedFile.id;
   }
   return headers;

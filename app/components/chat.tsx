@@ -593,7 +593,7 @@ export function ChatActions(props: {
           }}
         />
       )}
-      {props.folder.id != "" && (
+      {props.folder && props.folder.id != "" && (
         <ChatAction
           text={currentFile ? currentFile.name : props.folder.name}
           icon={<FolderIcon />}
@@ -602,7 +602,7 @@ export function ChatActions(props: {
           }}
         />
       )}
-      {showFolder && props.folder.id != "" && (
+      {showFolder && props.folder && props.folder.id != "" && (
         <Selector
           defaultSelectedValue={currentFile ? currentFile.id : ""}
           items={[
@@ -1337,7 +1337,7 @@ function _Chat() {
                     {message.references?.map((ref, index) => (
                       <TagWithTooltip
                         key={index}
-                        folder={session.folder.id}
+                        folder={session.folder?.id}
                         tagText={ref.referenceNumber}
                         tooltipText={ref.quote}
                       />
