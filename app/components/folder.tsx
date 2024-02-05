@@ -172,7 +172,7 @@ export function FolderConfig(props: {
   return (
     <>
       <List>
-        <ListItem title={Locale.Mask.Config.Avatar}>
+        <ListItem title={Locale.Folder.Config.Avatar}>
           <Popover
             content={
               <AvatarPicker
@@ -196,7 +196,7 @@ export function FolderConfig(props: {
             </div>
           </Popover>
         </ListItem>
-        <ListItem title={Locale.Mask.Config.Name}>
+        <ListItem title={Locale.Folder.Config.Name}>
           <input
             type="text"
             value={props.folder.name}
@@ -460,10 +460,10 @@ export function FolderPage() {
         <div className="window-header">
           <div className="window-header-title">
             <div className="window-header-main-title">
-              {Locale.Mask.Page.Title}
+              {Locale.Folder.Page.Title}
             </div>
             <div className="window-header-sub-title">
-              {Locale.Mask.Page.SubTitle(allMasks.length)}
+              {Locale.Folder.Page.SubTitle(allMasks.length)}
             </div>
           </div>
 
@@ -483,7 +483,7 @@ export function FolderPage() {
             <input
               type="text"
               className={styles["search-bar"]}
-              placeholder={Locale.Mask.Page.Search}
+              placeholder={Locale.Folder.Page.Search}
               autoFocus
               onInput={(e) => onSearch(e.currentTarget.value)}
             />
@@ -491,7 +491,7 @@ export function FolderPage() {
             <IconButton
               className={styles["mask-create"]}
               icon={<AddIcon />}
-              text={Locale.Mask.Page.Create}
+              text={Locale.Folder.Page.Create}
               bordered
               onClick={() => {
                 const createdMask = folderStore.create();
@@ -513,14 +513,14 @@ export function FolderPage() {
                   <div className={styles["mask-title"]}>
                     <div className={styles["mask-name"]}>{m.name}</div>
                     <div className={styles["mask-info"] + " one-line"}>
-                      {`${Locale.Mask.Item.Info(m.files?.length)} `}
+                      {`${Locale.Folder.Item.Info(m.files?.length)} `}
                     </div>
                   </div>
                 </div>
                 <div className={styles["mask-actions"]}>
                   <IconButton
                     icon={<AddIcon />}
-                    text={Locale.Mask.Item.Chat}
+                    text={Locale.Folder.Item.Chat}
                     onClick={() => {
                       chatStore.newSession2(m);
                       navigate(Path.Chat);
@@ -529,22 +529,24 @@ export function FolderPage() {
                   {!m.isOwner ? (
                     <IconButton
                       icon={<EyeIcon />}
-                      text={Locale.Mask.Item.View}
+                      text={Locale.Folder.Item.View}
                       onClick={() => setEditingMaskId(m.id)}
                     />
                   ) : (
                     <IconButton
                       icon={<EditIcon />}
-                      text={Locale.Mask.Item.Edit}
+                      text={Locale.Folder.Item.Edit}
                       onClick={() => setEditingMaskId(m.id)}
                     />
                   )}
                   {m.isOwner && (
                     <IconButton
                       icon={<DeleteIcon />}
-                      text={Locale.Mask.Item.Delete}
+                      text={Locale.Folder.Item.Delete}
                       onClick={async () => {
-                        if (await showConfirm(Locale.Mask.Item.DeleteConfirm)) {
+                        if (
+                          await showConfirm(Locale.Folder.Item.DeleteConfirm)
+                        ) {
                           folderStore.delete(m.id);
                         }
                       }}
@@ -560,7 +562,7 @@ export function FolderPage() {
       {editingMask && (
         <div className="modal-mask">
           <Modal
-            title={Locale.Mask.EditModal.Title(!editingMask?.isOwner)}
+            title={Locale.Folder.EditModal.Title(!editingMask?.isOwner)}
             onClose={closeMaskModal}
             actions={[]}
           >

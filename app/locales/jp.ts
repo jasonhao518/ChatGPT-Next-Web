@@ -239,6 +239,40 @@ const jp: PartialLocaleType = {
   Plugin: { Name: "プラグイン" },
   Folder: {
     Name: "フォルダ",
+    Page: {
+      Title: "フォルダ",
+      SubTitle: (count: number) => `${count} 件見つかりました。`,
+      Search: "検索",
+      Create: "新規",
+    },
+    Item: {
+      Info: (count: number) => `${count} 件会話を含む`,
+      Chat: "会話",
+      View: "詳細",
+      Edit: "編集",
+      Delete: "削除",
+      DeleteConfirm: "本当に削除しますか？",
+    },
+    EditModal: {
+      Title: (readonly: boolean) =>
+        `フォルダを編集 ${readonly ? "（読み取り専用）" : ""}`,
+      Download: "ダウンロード",
+      Clone: "複製",
+    },
+    Config: {
+      Avatar: "キャラクターのアイコン",
+      Name: "キャラクターの名前",
+      Sync: {
+        Title: "グローバル設定を利用する",
+        SubTitle: "このチャットでグローバル設定を利用します。",
+        Confirm:
+          "カスタム設定を上書きしてグローバル設定を使用します、よろしいですか？",
+      },
+      HideContext: {
+        Title: "キャラクター設定を表示しない",
+        SubTitle: "チャット画面でのキャラクター設定を非表示にします。",
+      },
+    },
   },
   FineTuned: { Sysmessage: "あなたはアシスタントです" },
   Mask: {

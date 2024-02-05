@@ -394,6 +394,43 @@ const cn = {
   },
   Folder: {
     Name: "文件夹",
+    Page: {
+      Title: "文件夹",
+      SubTitle: (count: number) => `${count} 个文件夹`,
+      Search: "搜索文件夹",
+      Create: "新建",
+    },
+    Item: {
+      Info: (count: number) => `包含 ${count} 个文件`,
+      Chat: "对话",
+      View: "查看",
+      Edit: "编辑",
+      Delete: "删除",
+      DeleteConfirm: "确认删除？",
+    },
+    EditModal: {
+      Title: (readonly: boolean) => `编辑文件夹 ${readonly ? "（只读）" : ""}`,
+      Download: "下载预设",
+      Clone: "克隆预设",
+    },
+    Config: {
+      Avatar: "文件夹头像",
+      Name: "文件夹名称",
+      Sync: {
+        Title: "使用全局设置",
+        SubTitle: "当前对话是否使用全局模型设置",
+        Confirm: "当前对话的自定义设置将会被自动覆盖，确认启用全局设置？",
+      },
+      HideContext: {
+        Title: "隐藏预设对话",
+        SubTitle: "隐藏后预设对话不会出现在聊天界面",
+      },
+      Share: {
+        Title: "分享此文件夹",
+        SubTitle: "生成此文件夹的直达链接",
+        Action: "复制链接",
+      },
+    },
   },
   FineTuned: {
     Sysmessage: "你是一个助手",
