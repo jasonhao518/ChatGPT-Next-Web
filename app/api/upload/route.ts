@@ -5,11 +5,21 @@ import { authOptions } from "@/lib/auth";
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { Quota } from "@/app/constant";
+import { saveFile } from "../common";
 
 export async function POST(req: NextRequest) {
   const { fileId, index, folder, folderName, filename, size, contentType } =
     await req.json();
   try {
+    const token = (await getToken({ req })) as any;
+    if (!token) {
+      return NextResponse.json(
+        { error: "Invalid access" },
+        {
+          status: 401,
+        },
+      );
+    }
     if (size > 20971520) {
       return NextResponse.json(
         { error: "Fize size limit is 20M" },
@@ -31,6 +41,16 @@ export async function POST(req: NextRequest) {
         "Content-Type": contentType,
       },
       Expires: 600, // Seconds before the presigned post expires. 3600 by default.
+    });
+    await saveFile({
+      ...token,
+      fileId,
+      index,
+      folder,
+      folderName,
+      filename,
+      size,
+      contentType,
     });
     return Response.json({ url, fields });
   } catch (error: any) {

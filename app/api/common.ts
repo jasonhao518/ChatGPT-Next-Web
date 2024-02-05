@@ -31,6 +31,24 @@ export async function getQuota(req: NextRequest): Promise<any> {
   }
 }
 
+export async function saveFile(data: any): Promise<any> {
+  try {
+    const response = await fetch(process.env.BASE_URL + "/file", {
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+      body: data,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Token": process.env.API_TOKEN!,
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+    return response.json();
+  } catch (error) {
+    return {};
+  }
+}
+
 export async function requestOpenai(req: NextRequest, gpt4: boolean) {
   const controller = new AbortController();
 
