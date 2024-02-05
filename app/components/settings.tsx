@@ -486,7 +486,7 @@ function SyncItems() {
   const promptStore = usePromptStore();
   const maskStore = useMaskStore();
   const couldSync = useMemo(() => {
-    return syncStore.coundSync();
+    return syncStore.coundSync() && !process.env.BETA;
   }, [syncStore]);
 
   const [showSyncConfigModal, setShowSyncConfigModal] = useState(false);
@@ -517,7 +517,7 @@ function SyncItems() {
           }
         >
           <div style={{ display: "flex" }}>
-            {couldSync && !process.env.BETA && (
+            {couldSync && (
               <IconButton
                 icon={<ResetIcon />}
                 text={Locale.UI.Sync}
