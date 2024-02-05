@@ -486,7 +486,7 @@ function SyncItems() {
   const promptStore = usePromptStore();
   const maskStore = useMaskStore();
   const couldSync = useMemo(() => {
-    return false;
+    return syncStore.coundSync() && process.env.PROD;
   }, [syncStore]);
 
   const [showSyncConfigModal, setShowSyncConfigModal] = useState(false);
