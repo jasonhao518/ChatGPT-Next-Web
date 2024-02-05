@@ -404,7 +404,7 @@ const en: LocaleType = {
     Page: {
       Title: "Folder",
       SubTitle: (count: number) => `${count}  folder`,
-      Search: "Search Templates",
+      Search: "Search Folder",
       Create: "Create",
     },
     Item: {
