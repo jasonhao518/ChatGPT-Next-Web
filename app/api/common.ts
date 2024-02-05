@@ -36,7 +36,7 @@ export async function saveFile(data: any): Promise<any> {
     const response = await fetch(process.env.BASE_URL + "/file", {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      body: data,
+      body: JSON.stringify(data),
       headers: {
         "Content-Type": "application/json",
         "X-Token": process.env.API_TOKEN!,
