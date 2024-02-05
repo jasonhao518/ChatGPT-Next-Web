@@ -201,10 +201,18 @@ export async function requestLangchain(req: NextRequest, gpt4: boolean) {
   const question = jsonBody.messages[jsonBody.messages.length - 1].content;
   const model = "gpt-3.5-turbo-16k";
   const temperature = jsonBody.temperature;
+  const headers = req.headers;
+  const token = (await getToken({ req, secret })) as any;
   const fetchOptions: RequestInit = {
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "no-store",
+      "X-Transaction-Id": headers.get("X-Transaction-Id")!,
+      "User-Agent": headers.get("User-Agent")!,
+      "X-User": token?.id!,
+      "X-Model": model,
+      "X-Vercel-Ip-Country": headers.get("X-Vercel-IP-Country")!,
+      "X-Vercel-Ip-City": headers.get("X-Vercel-IP-City")!,
       "X-Token": process.env.API_TOKEN!,
     },
     method: req.method,
