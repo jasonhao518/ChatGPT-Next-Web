@@ -517,7 +517,7 @@ function SyncItems() {
           }
         >
           <div style={{ display: "flex" }}>
-            {couldSync && (
+            {couldSync && !process.env.BETA && (
               <IconButton
                 icon={<ResetIcon />}
                 text={Locale.UI.Sync}
