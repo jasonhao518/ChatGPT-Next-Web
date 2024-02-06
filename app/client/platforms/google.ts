@@ -85,7 +85,7 @@ export class GeminiProApi implements LLMApi {
     const controller = new AbortController();
     options.onController?.(controller);
     try {
-      const chatPath = this.path(Google.ChatPath);
+      const chatPath = this.path(Google.ChatPath, options.config.model);
       const chatPayload = {
         method: "POST",
         body: JSON.stringify(requestPayload),
@@ -213,8 +213,8 @@ export class GeminiProApi implements LLMApi {
   async models(): Promise<LLMModel[]> {
     return [];
   }
-  path(path: string): string {
-    return "/api/google/" + path;
+  path(path: string, model: string): string {
+    return "/api/google/" + path.replace("{model}", model);
   }
 }
 
