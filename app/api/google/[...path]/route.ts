@@ -100,7 +100,6 @@ async function handle(
         city: headers.get("X-Vercel-IP-City")!,
         model: "gemini-pro",
         cost: 10,
-        created: Date.now(),
       });
     }
     return new Response(res.body, {
