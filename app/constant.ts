@@ -181,15 +181,6 @@ export const DEFAULT_MODELS = [
     },
   },
   {
-    name: "dall-e-2",
-    available: true,
-    provider: {
-      id: "openai",
-      providerName: "OpenAI",
-      providerType: "openai",
-    },
-  },
-  {
     name: "dall-e-3",
     available: true,
     provider: {
