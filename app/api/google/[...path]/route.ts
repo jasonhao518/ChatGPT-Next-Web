@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../auth";
 import { getServerSideConfig } from "@/app/config/server";
 import { GEMINI_BASE_URL, Google, ModelProvider } from "@/app/constant";
+import { saveFile } from "../../common";
+import { getToken } from "next-auth/jwt";
+const secret = process.env.NEXTAUTH_SECRET;
 
 async function handle(
   req: NextRequest,
@@ -85,10 +88,21 @@ async function handle(
     newHeaders.delete("www-authenticate");
     // to disable nginx buffering
     newHeaders.set("X-Accel-Buffering", "no");
-    res.headers.forEach((value, key) => {
-      console.log(key + ":" + value);
-    });
-    console.log();
+    if (res.status >= 200 && res.status >= 299) {
+      const headers = req.headers;
+      const token1 = (await getToken({ req, secret })) as any;
+
+      await saveFile("transaction", {
+        transaction_id: headers.get("X-Transaction-Id")!,
+        user_agent: headers.get("User-Agent")!,
+        user: token1?.id!,
+        country: headers.get("X-Vercel-IP-Country")!,
+        city: headers.get("X-Vercel-IP-City")!,
+        model: "gemini-pro",
+        cost: 10,
+        created: Date.now(),
+      });
+    }
     return new Response(res.body, {
       status: res.status,
       statusText: res.statusText,

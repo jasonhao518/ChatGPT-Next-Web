@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       },
       Expires: 600, // Seconds before the presigned post expires. 3600 by default.
     });
-    await saveFile({
+    await saveFile("file", {
       user: token.id,
       fileId,
       index,

@@ -31,9 +31,9 @@ export async function getQuota(req: NextRequest): Promise<any> {
   }
 }
 
-export async function saveFile(data: any): Promise<any> {
+export async function saveFile(type: string, data: any): Promise<any> {
   try {
-    const response = await fetch(process.env.BASE_URL + "/file", {
+    const response = await fetch(process.env.BASE_URL + "/file?type=" + type, {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
       body: JSON.stringify(data),
