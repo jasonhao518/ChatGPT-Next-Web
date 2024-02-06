@@ -180,10 +180,18 @@ export const DEFAULT_MODELS = [
       providerType: "openai",
     },
   },
-
+  {
+    name: "dall-e-3",
+    available: true,
+    provider: {
+      id: "openai",
+      providerName: "OpenAI",
+      providerType: "openai",
+    },
+  },
   {
     name: "gemini-pro",
-    available: false,
+    available: true,
     provider: {
       id: "google",
       providerName: "Google",

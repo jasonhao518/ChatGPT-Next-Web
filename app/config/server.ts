@@ -135,5 +135,12 @@ export const getCustomModels = (disableGPT4: boolean) => {
       .join(",");
   }
 
+  if (disableGPT4) {
+    if (customModels) customModels += ",";
+    customModels += DEFAULT_MODELS.filter((m) => m.name.startsWith("dall"))
+      .map((m) => "-" + m.name)
+      .join(",");
+  }
+
   return customModels;
 };
