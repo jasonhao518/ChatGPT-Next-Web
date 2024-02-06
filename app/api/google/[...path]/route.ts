@@ -88,7 +88,7 @@ async function handle(
     newHeaders.delete("www-authenticate");
     // to disable nginx buffering
     newHeaders.set("X-Accel-Buffering", "no");
-    if (res.status >= 200 && res.status >= 299) {
+    if (res.status >= 200 && res.status <= 299) {
       const headers = req.headers;
       const token1 = (await getToken({ req, secret })) as any;
 
