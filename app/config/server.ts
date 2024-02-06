@@ -64,6 +64,13 @@ export const getServerSideConfig = () => {
       .join(",");
   }
 
+  if (disableGPT4) {
+    if (customModels) customModels += ",";
+    customModels += DEFAULT_MODELS.filter((m) => m.name.startsWith("gemini"))
+      .map((m) => "-" + m.name)
+      .join(",");
+  }
+
   const isAzure = !!process.env.AZURE_URL;
   const isGoogle = !!process.env.GOOGLE_API_KEY;
 
@@ -117,6 +124,13 @@ export const getCustomModels = (disableGPT4: boolean) => {
   if (disableGPT4) {
     if (customModels) customModels += ",";
     customModels += DEFAULT_MODELS.filter((m) => m.name.startsWith("gpt-4"))
+      .map((m) => "-" + m.name)
+      .join(",");
+  }
+
+  if (disableGPT4) {
+    if (customModels) customModels += ",";
+    customModels += DEFAULT_MODELS.filter((m) => m.name.startsWith("gemini"))
       .map((m) => "-" + m.name)
       .join(",");
   }
