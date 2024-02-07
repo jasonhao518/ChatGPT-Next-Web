@@ -20,6 +20,42 @@ const en: LocaleType = {
     Confirm: "Confirm",
     Later: "Later",
   },
+  Midjourney: {
+    SelectImgMax: (max: number) => `Select up to ${max} images`,
+    InputDisabled: "Input is disabled in this mode",
+    HasImgTip:
+      "Tip: In the mask mode, only the first image will be used. In the blend mode, the five selected images will be used in order (click the image to remove it)",
+    ModeImagineUseImg: "Mask Mode",
+    ModeBlend: "Blend Mode",
+    ModeDescribe: "Describe Mode",
+    NeedInputUseImgPrompt:
+      'You need to enter content to use the image in the mask mode, please enter the content starting with "/mj"',
+    BlendMinImg: (min: number, max: number) =>
+      `At least ${min} images are required in the mixed image mode, and up to ${max} images are required`,
+    TaskErrUnknownType: "Task submission failed: unknown task type",
+    TaskErrNotSupportType: (type: string) =>
+      `Task submission failed: unsupported task type -> ${type}`,
+    StatusCode: (code: number) => `Status code: ${code}`,
+    TaskSubmitErr: (err: string) => `Task submission failed: ${err}`,
+    RespBody: (body: string) => `Response body: ${body}`,
+    None: "None",
+    UnknownError: "Unknown error",
+    UnknownReason: "Unknown reason",
+    TaskPrefix: (prompt: string, taskId: string) =>
+      `**Prompt:** ${prompt}\n**Task ID:** ${taskId}\n`,
+    PleaseWait: "Please wait a moment",
+    TaskSubmitOk: "Task submitted successfully",
+    TaskStatusFetchFail: "Failed to get task status",
+    TaskStatus: "Task status",
+    TaskRemoteSubmit: "Task has been submitted to Midjourney server",
+    TaskProgressTip: (progress: number | undefined) =>
+      `Task is running${progress ? `, current progress: ${progress}` : ""}`,
+    TaskNotStart: "Task has not started",
+    Url: "URL",
+    ImageAgent: "Image Agent",
+    ImageAgentOpenTip:
+      "After turning it on, the returned Midjourney image will be proxied by this program itself, so this program needs to be in a network environment that can access cdn.discordapp.com to be effective",
+  },
   ChatItem: {
     ChatItemCount: (count: number) => `${count} messages`,
   },
@@ -262,7 +298,11 @@ const en: LocaleType = {
       SubTitle:
         "Will compress if uncompressed messages length exceeds the value",
     },
-
+    Token: {
+      Title: "API Key",
+      SubTitle: "Use your key to ignore access code limit",
+      Placeholder: "OpenAI API Key",
+    },
     Usage: {
       Title: "Account Balance",
       SubTitle(used: any, total: any) {
@@ -338,7 +378,6 @@ const en: LocaleType = {
         },
       },
     },
-
     Model: "Model",
     Temperature: {
       Title: "Temperature",
@@ -371,7 +410,7 @@ const en: LocaleType = {
       History: (content: string) =>
         "This is a summary of the chat history as a recap: " + content,
       Topic:
-        "Please generate a four to five word title summarizing our conversation without any lead-in, punctuation, quotation marks, periods, symbols, bold text, or additional text. Remove enclosing quotation marks.",
+        "Please generate a four to five word title summarizing our conversation without any lead-in, punctuation, quotation marks, periods, symbols, or additional text. Remove enclosing quotation marks.",
       Summarize:
         "Summarize the discussion briefly in 200 words or less to use as a prompt for future context.",
     },

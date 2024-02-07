@@ -167,7 +167,11 @@ ${builtin} مدمجة، ${custom} تم تعريفها من قبل المستخد
       Title: "حد الضغط للتاريخ",
       SubTitle: "سيتم الضغط إذا تجاوزت طول الرسائل غير المضغوطة الحد المحدد",
     },
-
+    Token: {
+      Title: "مفتاح API",
+      SubTitle: "استخدم مفتاحك لتجاوز حد رمز الوصول",
+      Placeholder: "مفتاح OpenAI API",
+    },
     Usage: {
       Title: "رصيد الحساب",
       SubTitle(used: any, total: any) {
