@@ -42,7 +42,6 @@ export class ChatGPTApi implements LLMApi {
     }
 
     let baseUrl = isAzure ? accessStore.azureUrl : accessStore.openaiUrl;
-
     if (baseUrl.length === 0) {
       const isApp = !!getClientConfig()?.isApp;
       baseUrl = isApp ? DEFAULT_API_HOST : ApiPath.OpenAI;
@@ -149,9 +148,9 @@ export class ChatGPTApi implements LLMApi {
         };
 
         controller.signal.onabort = finish;
-
         fetchEventSource(chatPath, {
           ...chatPayload,
+          credentials: "include",
           async onopen(res) {
             clearTimeout(requestTimeoutId);
             const contentType = res.headers.get("content-type");
@@ -231,6 +230,7 @@ export class ChatGPTApi implements LLMApi {
         options.onFinish(message);
       }
     } catch (e) {
+      console.log(e);
       console.log("[Request] failed to make a chat request", e);
       options.onError?.(e as Error);
     }
