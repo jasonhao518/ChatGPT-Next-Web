@@ -1,6 +1,7 @@
 import {
   ApiPath,
   DEFAULT_API_HOST,
+  BASE_URL,
   ServiceProvider,
   StoreKey,
 } from "../constant";
@@ -21,7 +22,7 @@ const DEFAULT_ACCESS_STATE = {
   provider: ServiceProvider.OpenAI,
 
   // openai
-  openaiUrl: process.env.BASE_URL!,
+  openaiUrl: BASE_URL,
   openaiApiKey: "anything",
 
   // azure

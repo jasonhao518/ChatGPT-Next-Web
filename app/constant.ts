@@ -11,6 +11,7 @@ export const RUNTIME_CONFIG_DOM = "danger-runtime-config";
 export const DEFAULT_CORS_HOST = `https://app.${process.env.ROOT_DOMAIN}`;
 export const DEFAULT_API_HOST = `${DEFAULT_CORS_HOST}/api/proxy`;
 export const OPENAI_BASE_URL = "https://api.openai.com";
+export const BASE_URL = `${process.env.BASE_URL}`;
 
 export const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/";
 
