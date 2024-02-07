@@ -22,7 +22,7 @@ const DEFAULT_ACCESS_STATE = {
 
   // openai
   openaiUrl: process.env.BASE_URL!,
-  openaiApiKey: "",
+  openaiApiKey: "anything",
 
   // azure
   azureUrl: "",
