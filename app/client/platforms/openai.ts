@@ -104,8 +104,7 @@ export class ChatGPTApi implements LLMApi {
         body: JSON.stringify(requestPayload),
         signal: controller.signal,
         headers: getHeaders(),
-        withCredentials: true,
-        credentials: "include",
+        credentials: "include" as RequestCredentials,
       };
 
       // make a fetch request
