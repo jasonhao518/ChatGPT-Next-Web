@@ -1,8 +1,5 @@
 @import "../styles/animation.scss";
-.image {
-  width: 100%;
-  height: auto;
-}
+
 .chat-input-actions {
   display: flex;
   flex-wrap: wrap;
@@ -397,7 +394,10 @@
   pointer-events: none;
   z-index: 1;
 }
-
+.chat-message-image {
+  width: 100%;
+  height: auto;
+}
 .chat-message-action-tag-container {
   display: flex; /* Flexbox layout for inline arrangement of tags */
   flex-wrap: wrap; /* Allows tags to wrap to the next line */

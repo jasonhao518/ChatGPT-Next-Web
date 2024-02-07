@@ -1343,7 +1343,10 @@ function _Chat() {
                       />
                     ))}
                     {message.image && (
-                      <img className="image" src={message.image} />
+                      <img
+                        className={styles["chat-message-image"]}
+                        src={message.image}
+                      />
                     )}
                   </div>
                   <div className={styles["chat-message-action-date"]}>
