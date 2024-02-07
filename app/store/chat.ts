@@ -378,6 +378,8 @@ export const useChatStore = createPersistStore(
                   console.log(json);
                   botMessage.content = json?.answer;
                   botMessage.references = json?.references;
+                } else if (json?.image) {
+                  botMessage.content = '<img src="' + json.image + '" />';
                 }
               } else {
                 botMessage.content = message;
