@@ -1342,6 +1342,7 @@ function _Chat() {
                         tooltipText={ref.quote}
                       />
                     ))}
+                    {message.image && <img src={message.image} />}
                   </div>
                   <div className={styles["chat-message-action-date"]}>
                     {isContext

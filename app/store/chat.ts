@@ -28,6 +28,7 @@ export type ChatMessage = RequestMessage & {
   date: string;
   references?: Array<Reference>;
   streaming?: boolean;
+  image?: string;
   isError?: boolean;
   id: string;
   model?: ModelType;
@@ -379,7 +380,8 @@ export const useChatStore = createPersistStore(
                   botMessage.content = json?.answer;
                   botMessage.references = json?.references;
                 } else if (json?.image) {
-                  botMessage.content = '<img src="' + json.image + '" />';
+                  botMessage.content = "";
+                  botMessage.image = json?.image;
                 }
               } else {
                 botMessage.content = message;
