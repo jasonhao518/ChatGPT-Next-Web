@@ -100,6 +100,7 @@ export class ChatGPTApi implements LLMApi {
     try {
       const chatPath = this.path(OpenaiPath.ChatPath);
       const chatPayload = {
+        options: { timeout: 80000 },
         method: "POST",
         body: JSON.stringify(requestPayload),
         signal: controller.signal,
