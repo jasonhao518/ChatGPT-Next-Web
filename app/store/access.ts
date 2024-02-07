@@ -11,16 +11,17 @@ import { ensure } from "../utils/clone";
 
 let fetchState = 0; // 0 not fetch, 1 fetching, 2 done
 
-const DEFAULT_OPENAI_URL = process.env.BASE_URL!;
+const DEFAULT_OPENAI_URL =
+  getClientConfig()?.buildMode === "export" ? DEFAULT_API_HOST : ApiPath.OpenAI;
 
 const DEFAULT_ACCESS_STATE = {
   accessCode: "",
-  useCustomConfig: false,
+  useCustomConfig: true,
 
   provider: ServiceProvider.OpenAI,
 
   // openai
-  openaiUrl: DEFAULT_OPENAI_URL,
+  openaiUrl: process.env.BASE_URL!,
   openaiApiKey: "",
 
   // azure
