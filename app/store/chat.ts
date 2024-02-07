@@ -380,7 +380,7 @@ export const useChatStore = createPersistStore(
                   botMessage.content = json?.answer;
                   botMessage.references = json?.references;
                 } else if (json?.image) {
-                  botMessage.content = "";
+                  botMessage.content = json?.prompt;
                   botMessage.image = json?.image;
                 }
               } else {
