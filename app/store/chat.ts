@@ -374,10 +374,10 @@ export const useChatStore = createPersistStore(
                   trimedMessage.length - 3,
                 );
                 const json = JSON.parse(content) as any;
-                if (json?.output?.answer) {
+                if (json?.answer) {
                   console.log(json);
-                  botMessage.content = json?.output?.answer;
-                  botMessage.references = json?.output?.references;
+                  botMessage.content = json?.answer;
+                  botMessage.references = json?.references;
                 }
               } else {
                 botMessage.content = message;
