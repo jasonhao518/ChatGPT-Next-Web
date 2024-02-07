@@ -21,7 +21,7 @@ const DEFAULT_ACCESS_STATE = {
   provider: ServiceProvider.OpenAI,
 
   // openai
-  openaiUrl: DEFAULT_OPENAI_URL,
+  openaiUrl: process.env.BASE_URL,
   openaiApiKey: "",
 
   // azure
