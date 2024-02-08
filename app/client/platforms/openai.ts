@@ -83,7 +83,7 @@ export class ChatGPTApi implements LLMApi {
         model: options.config.model,
       },
     };
-    const message = messages[0] as ChatMessage;
+    const message = options.messages[0] as ChatMessage;
     const requestPayload = {
       messages,
       stream: options.config.stream,
