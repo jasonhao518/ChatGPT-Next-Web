@@ -1,6 +1,3 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-
 import { trimTopic } from "../utils";
 
 import Locale, { getLang } from "../locales";
@@ -16,12 +13,7 @@ import {
   StoreKey,
   SUMMARIZE_MODEL,
 } from "../constant";
-import {
-  ClientApi,
-  RequestMessage,
-  getHeaders,
-  useGetMidjourneySelfProxyUrl,
-} from "../client/api";
+import { ClientApi, RequestMessage } from "../client/api";
 import { ChatControllerPool } from "../client/controller";
 import { prettyObject } from "../utils/format";
 import { estimateTokenLength } from "../utils/token";
@@ -40,7 +32,6 @@ export type ChatMessage = RequestMessage & {
   isError?: boolean;
   id: string;
   model?: ModelType;
-  attr?: any;
 };
 
 export function createMessage(override: Partial<ChatMessage>): ChatMessage {
@@ -95,36 +86,6 @@ function createEmptySession(): ChatSession {
     folder: createEmptyFolder(),
     mask: createEmptyMask(),
   };
-}
-
-const ChatFetchTaskPool: Record<string, any> = {};
-
-interface ChatStore {
-  sessions: ChatSession[];
-  currentSessionIndex: number;
-  clearSessions: () => void;
-  moveSession: (from: number, to: number) => void;
-  selectSession: (index: number) => void;
-  newSession: (mask?: Mask) => void;
-  deleteSession: (index: number) => void;
-  currentSession: () => ChatSession;
-  nextSession: (delta: number) => void;
-  onNewMessage: (message: ChatMessage) => void;
-  onUserInput: (content: string, extAttr?: any) => Promise<void>;
-  summarizeSession: () => void;
-  updateStat: (message: ChatMessage) => void;
-  updateCurrentSession: (updater: (session: ChatSession) => void) => void;
-  updateMessage: (
-    sessionIndex: number,
-    messageIndex: number,
-    updater: (message?: ChatMessage) => void,
-  ) => void;
-  resetSession: () => void;
-  getMessagesWithMemory: () => ChatMessage[];
-  getMemoryPrompt: () => ChatMessage;
-
-  clearAllData: () => void;
-  fetchMidjourneyStatus: (botMessage: ChatMessage, extAttr?: any) => void;
 }
 
 function getSummarizeModel(currentModel: string) {
@@ -339,6 +300,7 @@ export const useChatStore = createPersistStore(
       },
 
       onNewMessage(message: ChatMessage) {
+        console.log("new message: " + JSON.stringify(message));
         get().updateCurrentSession((session) => {
           session.messages = session.messages.concat();
           session.lastUpdate = Date.now();
@@ -347,130 +309,9 @@ export const useChatStore = createPersistStore(
         get().summarizeSession();
       },
 
-      fetchMidjourneyStatus(botMessage: ChatMessage, extAttr?: any) {
-        const taskId = botMessage?.attr?.taskId;
-        // console.log('fetchMidjourneyStatus', botMessage, extAttr)
-        if (
-          !taskId ||
-          ["SUCCESS", "FAILURE"].includes(botMessage?.attr?.status) ||
-          ChatFetchTaskPool[taskId]
-        )
-          return;
-        // console.log('fetchMidjourneyStatus enter', botMessage, extAttr)
-        ChatFetchTaskPool[taskId] = setTimeout(async () => {
-          ChatFetchTaskPool[taskId] = null;
-          const statusRes = await fetch(
-            `/api/midjourney/task/status/${taskId}`,
-            {
-              method: "GET",
-              headers: getHeaders(),
-            },
-          );
-          const statusResJson = await statusRes.json();
-          if (statusRes.status < 200 || statusRes.status >= 300) {
-            botMessage.content =
-              Locale.Midjourney.TaskStatusFetchFail +
-                ": " +
-                (statusResJson?.error || statusResJson?.description) ||
-              Locale.Midjourney.UnknownReason;
-          } else {
-            let isFinished = false;
-            let content;
-            const prefixContent = Locale.Midjourney.TaskPrefix(
-              statusResJson.prompt,
-              taskId,
-            );
-            switch (statusResJson?.status) {
-              case "SUCCESS":
-                content = statusResJson.uri;
-                isFinished = true;
-                if (statusResJson.uri) {
-                  let imgUrl = useGetMidjourneySelfProxyUrl(statusResJson.uri);
-                  botMessage.attr.imgUrl = imgUrl;
-                  botMessage.content =
-                    prefixContent + `[![${taskId}](${imgUrl})](${imgUrl})`;
-                }
-                if (
-                  statusResJson.action === "DESCRIBE" &&
-                  statusResJson.prompt
-                ) {
-                  botMessage.content = statusResJson.prompt;
-                }
-                botMessage.attr.options = statusResJson.options;
-                botMessage.attr.msgId = statusResJson.msgId;
-                botMessage.attr.flags = statusResJson.flags;
-                botMessage.attr.msgHash = statusResJson.msgHash;
-                break;
-              case "FAIL":
-                content = statusResJson.msg || Locale.Midjourney.UnknownReason;
-                isFinished = true;
-                botMessage.content =
-                  prefixContent +
-                  `**${
-                    Locale.Midjourney.TaskStatus
-                  }:** [${new Date().toLocaleString()}] - ${content}`;
-                break;
-              case "WAIT":
-                content = Locale.Midjourney.TaskNotStart;
-                break;
-              case "PROGRESS":
-                content = Locale.Midjourney.TaskProgressTip(
-                  statusResJson.progress,
-                );
-                break;
-              case "SUBMITTED":
-                content = Locale.Midjourney.TaskRemoteSubmit;
-                break;
-              default:
-                content = statusResJson.status;
-            }
-            botMessage.attr.status = statusResJson.status;
-            if (isFinished) {
-              botMessage.attr.finished = true;
-            } else {
-              botMessage.content =
-                prefixContent +
-                `**${
-                  Locale.Midjourney.TaskStatus
-                }:** [${new Date().toLocaleString()}] - ${content}`;
-              if (statusResJson.status === "PROGRESS" && statusResJson.uri) {
-                let imgUrl = useGetMidjourneySelfProxyUrl(statusResJson.uri);
-                botMessage.attr.imgUrl = imgUrl;
-                botMessage.content += `\n[![${taskId}](${imgUrl})](${imgUrl})`;
-              }
-              this.fetchMidjourneyStatus(botMessage, extAttr);
-            }
-            set(() => ({}));
-            if (isFinished) {
-              extAttr?.setAutoScroll(true);
-            }
-          }
-        }, 3000);
-      },
-
-      async onUserInput(content: string, extAttr?: any) {
+      async onUserInput(content: string) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
-
-        if (
-          extAttr?.mjImageMode &&
-          (extAttr?.useImages?.length ?? 0) > 0 &&
-          extAttr.mjImageMode !== "IMAGINE"
-        ) {
-          if (
-            extAttr.mjImageMode === "BLEND" &&
-            (extAttr.useImages.length < 2 || extAttr.useImages.length > 5)
-          ) {
-            alert(Locale.Midjourney.BlendMinImg(2, 5));
-            return new Promise((resolve: any, reject) => {
-              resolve(false);
-            });
-          }
-          content = `/mj ${extAttr?.mjImageMode}`;
-          extAttr.useImages.forEach((img: any, index: number) => {
-            content += `::[${index + 1}]${img.filename}`;
-          });
-        }
 
         const userContent = fillTemplateWith(content, modelConfig);
         console.log("[User Input] after template: ", userContent);
@@ -484,13 +325,11 @@ export const useChatStore = createPersistStore(
           role: "assistant",
           streaming: true,
           model: modelConfig.model,
-          attr: {},
         });
 
         // get recent messages
         const recentMessages = get().getMessagesWithMemory();
         const sendMessages = recentMessages.concat(userMessage);
-        const sessionId = get().currentSession().id;
         const messageIndex = get().currentSession().messages.length + 1;
 
         // save user's and bot's message
@@ -505,169 +344,82 @@ export const useChatStore = createPersistStore(
           ]);
         });
 
-        if (
-          content.toLowerCase().startsWith("/mj") ||
-          content.toLowerCase().startsWith("/MJ")
-        ) {
-          botMessage.model = "midjourney";
-          const startFn = async () => {
-            const prompt = content.substring(3).trim();
-            let action: string = "IMAGINE";
-            console.log(action);
-            const firstSplitIndex = prompt.indexOf("::");
-            if (firstSplitIndex > 0) {
-              action = prompt.substring(0, firstSplitIndex);
-            }
-            if (!["CUSTOM", "IMAGINE", "DESCRIBE", "BLEND"].includes(action)) {
-              botMessage.content = Locale.Midjourney.TaskErrUnknownType;
-              botMessage.streaming = false;
-              return;
-            }
-            botMessage.attr.action = action;
-            let actionIndex: any = null;
-            let actionUseTaskId: any = null;
-            let cmd: any = null;
-            if (action === "CUSTOM") {
-              const s = prompt.substring(firstSplitIndex + 2);
-              const nextIndex = s.indexOf("::");
-              actionUseTaskId = s.substring(0, nextIndex);
-              cmd = s.substring(nextIndex + 2);
-            }
-            try {
-              const imageBase64s =
-                extAttr?.useImages?.map((ui: any) => ui.base64) || [];
-              const res = await fetch("/api/midjourney/task/submit", {
-                method: "POST",
-                headers: getHeaders(),
-                body: JSON.stringify({
-                  prompt: prompt,
-                  images: imageBase64s,
-                  action: action,
-                  cmd: cmd,
-                  index: actionIndex,
-                  taskId: actionUseTaskId,
-                  msgId: extAttr?.botMsg?.msgId,
-                  flags: extAttr?.botMsg?.flags,
-                  msgHash: extAttr?.botMsg?.msgHash,
-                }),
-              });
-              if (res == null) {
-                botMessage.content =
-                  Locale.Midjourney.TaskErrNotSupportType(action);
-                botMessage.streaming = false;
-                return;
-              }
-              if (!res.ok) {
-                const text = await res.text();
-                botMessage.content =
-                  res.status === 401
-                    ? `${Locale.Error.Unauthorized}\n\`\`\`json\n${text}\n\`\`\`\n`
-                    : Locale.Midjourney.TaskSubmitErr(
-                        text || Locale.Midjourney.UnknownError,
-                      );
-              } else {
-                const resJson = await res.json();
-                if (resJson.status == "FAIL" || resJson.code !== 0) {
-                  botMessage.content = Locale.Midjourney.TaskSubmitErr(
-                    resJson.msg ||
-                      resJson.error ||
-                      Locale.Midjourney.UnknownError,
-                  );
-                } else {
-                  const taskId: string = resJson.taskId;
-                  const prefixContent = Locale.Midjourney.TaskPrefix(
-                    prompt,
-                    taskId,
-                  );
-                  botMessage.content =
-                    prefixContent +
-                    `[${new Date().toLocaleString()}] - ${
-                      Locale.Midjourney.TaskSubmitOk
-                    }: ` +
-                    Locale.Midjourney.PleaseWait;
-                  botMessage.attr.taskId = taskId;
-                  botMessage.attr.status = resJson.status;
-                  this.fetchMidjourneyStatus(botMessage, extAttr);
-                }
-              }
-            } catch (e: any) {
-              console.error(e);
-              botMessage.content = Locale.Midjourney.TaskSubmitErr(
-                e?.error || e?.message || Locale.Midjourney.UnknownError,
-              );
-            } finally {
-              ChatControllerPool.remove(
-                sessionId,
-                botMessage.id ?? messageIndex,
-              );
-              botMessage.streaming = false;
-            }
-          };
-          await startFn();
-          get().onNewMessage(botMessage);
-          set(() => ({}));
-          extAttr?.setAutoScroll(true);
+        var api: ClientApi;
+        if (modelConfig.model === "gemini-pro") {
+          api = new ClientApi(ModelProvider.GeminiPro);
         } else {
-          var api: ClientApi;
-          if (modelConfig.model === "gemini-pro") {
-            api = new ClientApi(ModelProvider.GeminiPro);
-          } else if (modelConfig.model === "midjourney") {
-            api = new ClientApi(ModelProvider.MidJourney);
-          } else {
-            api = new ClientApi(ModelProvider.GPT);
-          }
-          // make request
-          api.llm.chat({
-            messages: sendMessages,
-            config: { ...modelConfig, stream: true },
-            onUpdate(message) {
-              botMessage.streaming = true;
-              if (message) {
-                botMessage.content = message;
-              }
-              get().updateCurrentSession((session) => {
-                session.messages = session.messages.concat();
-              });
-            },
-            onFinish(message) {
-              botMessage.streaming = false;
-              if (message) {
-                botMessage.content = message;
-                get().onNewMessage(botMessage);
-              }
-              ChatControllerPool.remove(session.id, botMessage.id);
-            },
-            onError(error) {
-              const isAborted = error.message.includes("aborted");
-              botMessage.content +=
-                "\n\n" +
-                prettyObject({
-                  error: true,
-                  message: error.message,
-                });
-              botMessage.streaming = false;
-              userMessage.isError = !isAborted;
-              botMessage.isError = !isAborted;
-              get().updateCurrentSession((session) => {
-                session.messages = session.messages.concat();
-              });
-              ChatControllerPool.remove(
-                session.id,
-                botMessage.id ?? messageIndex,
-              );
-
-              console.error("[Chat] failed ", error);
-            },
-            onController(controller) {
-              // collect controller for stop/retry
-              ChatControllerPool.addController(
-                session.id,
-                botMessage.id ?? messageIndex,
-                controller,
-              );
-            },
-          });
+          api = new ClientApi(ModelProvider.GPT);
         }
+
+        // make request
+        api.llm.chat({
+          messages: sendMessages,
+          config: { ...modelConfig, stream: true },
+          onUpdate(message) {
+            botMessage.streaming = true;
+            if (message) {
+              botMessage.content = message;
+            }
+            get().updateCurrentSession((session) => {
+              session.messages = session.messages.concat();
+            });
+          },
+          onFinish(message) {
+            botMessage.streaming = false;
+            if (message) {
+              // handle references
+              const trimedMessage = message.trim();
+              if (trimedMessage.startsWith("```json")) {
+                const content = trimedMessage.substring(
+                  7,
+                  trimedMessage.length - 3,
+                );
+                const json = JSON.parse(content) as any;
+                if (json?.answer) {
+                  console.log(json);
+                  botMessage.content = json?.answer;
+                  botMessage.references = json?.references;
+                } else if (json?.image) {
+                  botMessage.content = json?.prompt;
+                  botMessage.image = json?.image;
+                }
+              } else {
+                botMessage.content = message;
+              }
+              get().onNewMessage(botMessage);
+            }
+            ChatControllerPool.remove(session.id, botMessage.id);
+          },
+          onError(error) {
+            const isAborted = error.message.includes("aborted");
+            botMessage.content +=
+              "\n\n" +
+              prettyObject({
+                error: true,
+                message: error.message,
+              });
+            botMessage.streaming = false;
+            userMessage.isError = !isAborted;
+            botMessage.isError = !isAborted;
+            get().updateCurrentSession((session) => {
+              session.messages = session.messages.concat();
+            });
+            ChatControllerPool.remove(
+              session.id,
+              botMessage.id ?? messageIndex,
+            );
+
+            console.error("[Chat] failed ", error);
+          },
+          onController(controller) {
+            // collect controller for stop/retry
+            ChatControllerPool.addController(
+              session.id,
+              botMessage.id ?? messageIndex,
+              controller,
+            );
+          },
+        });
       },
 
       getMemoryPrompt() {

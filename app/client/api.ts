@@ -6,13 +6,7 @@ import {
   ModelProvider,
   ServiceProvider,
 } from "../constant";
-import {
-  ChatMessage,
-  ModelType,
-  useAccessStore,
-  useAppConfig,
-  useChatStore,
-} from "../store";
+import { ChatMessage, ModelType, useAccessStore, useChatStore } from "../store";
 import { ChatGPTApi } from "./platforms/openai";
 import { GeminiProApi } from "./platforms/google";
 import { MidJourneyApi } from "./platforms/midjourney";
@@ -95,7 +89,6 @@ export class ClientApi {
   public llm: LLMApi;
 
   constructor(provider: ModelProvider = ModelProvider.GPT) {
-    console.log(provider);
     if (provider === ModelProvider.GeminiPro) {
       this.llm = new GeminiProApi();
       return;
@@ -169,8 +162,8 @@ export function getHeaders() {
   const apiKey = isGoogle
     ? accessStore.googleApiKey
     : isAzure
-      ? accessStore.azureApiKey
-      : accessStore.openaiApiKey;
+    ? accessStore.azureApiKey
+    : accessStore.openaiApiKey;
 
   const makeBearer = (s: string) => `${isAzure ? "" : "Bearer "}${s.trim()}`;
   const validString = (x: string) => x && x.length > 0;
@@ -193,19 +186,4 @@ export function getHeaders() {
     headers["X-File"] = folder.selectedFile.id;
   }
   return headers;
-}
-
-export function useGetMidjourneySelfProxyUrl(url: string) {
-  const config = useAppConfig.getState();
-  if (config.useMjImgSelfProxy) {
-    const accessStore = useAccessStore.getState();
-    url = url.replace("https://cdn.discordapp.com", "/cdn/discordapp");
-    if (accessStore.accessCode) {
-      url +=
-        (url.includes("?") ? "&" : "?") +
-        "Authorization=" +
-        accessStore.accessCode;
-    }
-  }
-  return url;
 }

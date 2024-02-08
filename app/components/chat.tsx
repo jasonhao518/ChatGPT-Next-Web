@@ -373,10 +373,8 @@ function ClearContextDivider() {
 
 function ChatAction(props: {
   text: string;
-  icon?: JSX.Element;
-  innerNode?: JSX.Element;
+  icon: JSX.Element;
   onClick: () => void;
-  style?: React.CSSProperties;
 }) {
   const iconRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
@@ -401,29 +399,23 @@ function ChatAction(props: {
       className={`${styles["chat-input-action"]} clickable`}
       onClick={() => {
         props.onClick();
-        iconRef ? setTimeout(updateWidth, 1) : undefined;
+        setTimeout(updateWidth, 1);
       }}
-      onMouseEnter={props.icon ? updateWidth : undefined}
-      onTouchStart={props.icon ? updateWidth : undefined}
+      onMouseEnter={updateWidth}
+      onTouchStart={updateWidth}
       style={
-        props.icon
-          ? ({
-              "--icon-width": `${width.icon}px`,
-              "--full-width": `${width.full}px`,
-              ...props.style,
-            } as React.CSSProperties)
-          : props.style
+        {
+          "--icon-width": `${width.icon}px`,
+          "--full-width": `${width.full}px`,
+        } as React.CSSProperties
       }
     >
-      {props.icon ? (
-        <div ref={iconRef} className={styles["icon"]}>
-          {props.icon}
-        </div>
-      ) : null}
-      <div className={props.icon ? styles["text"] : undefined} ref={textRef}>
+      <div ref={iconRef} className={styles["icon"]}>
+        {props.icon}
+      </div>
+      <div className={styles["text"]} ref={textRef}>
         {props.text}
       </div>
-      {props.innerNode}
     </div>
   );
 }
@@ -486,23 +478,27 @@ export function ChatActions(props: {
   const stopAll = () => ChatControllerPool.stopAll();
 
   function selectImage() {
-    document.getElementById("chat-image-file-select-upload")?.click();
-  }
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".png,.jpg,.webp,.jpeg";
 
-  const onImageSelected = (e: any) => {
-    const file = e.target.files[0];
-    const filename = file.name;
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const base64 = reader.result;
-      props.imageSelected({
-        filename,
-        base64,
-      });
+    fileInput.onchange = (e: any) => {
+      const file = e.target.files[0];
+      const filename = file.name;
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result;
+        props.imageSelected({
+          filename,
+          base64,
+        });
+      };
+      e.target.value = null;
     };
-    e.target.value = null;
-  };
+
+    fileInput.click();
+  }
 
   // switch model
   const currentModel = chatStore.currentSession().mask.modelConfig.model;
@@ -598,26 +594,18 @@ export function ChatActions(props: {
           });
         }}
       />
-
-      <ChatAction
-        onClick={() => setShowModelSelector(true)}
-        text={currentModel}
-        icon={<RobotIcon />}
-      />
+      {props.display && (
+        <ChatAction
+          onClick={() => setShowModelSelector(true)}
+          text={currentModel}
+          icon={<RobotIcon />}
+        />
+      )}
       {props.display && (
         <ChatAction
           onClick={selectImage}
           text="选择图片"
           icon={<UploadIcon />}
-          innerNode={
-            <input
-              type="file"
-              accept=".png,.jpg,.webp,.jpeg"
-              id="chat-image-file-select-upload"
-              style={{ display: "none" }}
-              onChange={onImageSelected}
-            />
-          }
         />
       )}
       {props.display && showModelSelector && (
@@ -827,16 +815,8 @@ function _Chat() {
     }
   };
 
-  const doSubmit = async (userInput: string, extAttr?: any) => {
-    userInput = userInput.trim();
-    if (useImages.length > 0) {
-      if (mjImageMode === "IMAGINE" && userInput == "") {
-        alert(Locale.Midjourney.NeedInputUseImgPrompt);
-        return;
-      }
-    } else {
-      if (userInput == "") return;
-    }
+  const doSubmit = (userInput: string) => {
+    if (userInput.trim() === "") return;
     const matchCommand = chatCommands.match(userInput);
     if (matchCommand.matched) {
       setUserInput("");
@@ -844,27 +824,13 @@ function _Chat() {
       matchCommand.invoke();
       return;
     }
-    try {
-      const res: any = await chatStore.onUserInput(userInput, {
-        useImages,
-        mjImageMode,
-        setAutoScroll,
-        botMsg: extAttr?.botMsg,
-      });
-      if (res !== false) {
-        localStorage.setItem(LAST_INPUT_KEY, userInput);
-        setUserInput("");
-        setUseImages([]);
-        setMjImageMode("BLEND");
-        setPromptHints([]);
-        if (!isMobileScreen) inputRef.current?.focus();
-        setAutoScroll(true);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    chatStore.onUserInput(userInput).then(() => setIsLoading(false));
+    localStorage.setItem(LAST_INPUT_KEY, userInput);
+    setUserInput("");
+    setPromptHints([]);
+    if (!isMobileScreen) inputRef.current?.focus();
+    setAutoScroll(true);
   };
 
   const onPromptSelect = (prompt: RenderPompt) => {
@@ -1182,13 +1148,6 @@ function _Chat() {
     },
   });
 
-  // messages?.forEach((msg) => {
-  //     console.log('each')
-  //     if (msg.model === "midjourney" && msg.attr?.taskId) {
-  //         chatStore.fetchMidjourneyStatus(msg);
-  //     }
-  // });
-
   // edit / insert message modal
   const [isEditingMessage, setIsEditingMessage] = useState(false);
 
@@ -1425,39 +1384,6 @@ function _Chat() {
                       />
                     )}
                   </div>
-                  {!isUser &&
-                    message.model == "midjourney" &&
-                    message.attr?.finished &&
-                    message.attr?.taskId &&
-                    message.attr?.options?.length && (
-                      <div
-                        className={[
-                          styles["chat-message-actions"],
-                          styles["column-flex"],
-                        ].join(" ")}
-                      >
-                        <div
-                          style={{ marginTop: "6px" }}
-                          className={styles["chat-input-actions"]}
-                        >
-                          {message.attr?.options.map((item: any) => (
-                            <ChatAction
-                              style={{ marginBottom: "6px" }}
-                              key={message.attr.taskId + item.custom}
-                              text={item.label}
-                              onClick={() =>
-                                doSubmit(
-                                  `/mj CUSTOM::${message.attr.taskId}::${item.custom}`,
-                                  {
-                                    botMsg: message.attr,
-                                  },
-                                )
-                              }
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   <div className={styles["chat-message-action-date"]}>
                     {isContext
                       ? Locale.Chat.IsContext
