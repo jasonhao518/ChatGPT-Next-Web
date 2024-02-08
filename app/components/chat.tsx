@@ -96,7 +96,7 @@ import { Folder, S3File } from "../store/folder";
 
 interface ResizedImage {
   file: File;
-  dataURL: string;
+  base64: string;
 }
 
 function resizeImage(
@@ -141,7 +141,7 @@ function resizeImage(
 
               const resizedImage: ResizedImage = {
                 file: resizedFile,
-                dataURL: URL.createObjectURL(resizedFile),
+                base64: reader.result,
               };
 
               resolve(resizedImage);
@@ -586,7 +586,7 @@ export function ChatActions(props: {
               props.imageSelected({
                 filename: file.name,
                 url: fileUrl,
-                base64: resizedImage.dataURL,
+                base64: resizedImage.base64,
               });
             } else {
               alert("upload failed");
