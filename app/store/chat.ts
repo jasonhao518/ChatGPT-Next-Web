@@ -27,10 +27,16 @@ import { prettyObject } from "../utils/format";
 import { estimateTokenLength } from "../utils/token";
 import { nanoid } from "nanoid";
 import { createPersistStore } from "../utils/store";
-
+import { Folder, createEmptyFolder } from "./folder";
+export type Reference = {
+  referenceNumber: string;
+  quote: string;
+};
 export type ChatMessage = RequestMessage & {
   date: string;
+  references?: Array<Reference>;
   streaming?: boolean;
+  image?: string;
   isError?: boolean;
   id: string;
   model?: ModelType;
@@ -63,7 +69,7 @@ export interface ChatSession {
   lastUpdate: number;
   lastSummarizeIndex: number;
   clearContextIndex?: number;
-
+  folder: Folder;
   mask: Mask;
 }
 
@@ -86,7 +92,7 @@ function createEmptySession(): ChatSession {
     },
     lastUpdate: Date.now(),
     lastSummarizeIndex: 0,
-
+    folder: createEmptyFolder(),
     mask: createEmptyMask(),
   };
 }
@@ -237,6 +243,29 @@ export const useChatStore = createPersistStore(
             },
           };
           session.topic = mask.name;
+        }
+
+        set((state) => ({
+          currentSessionIndex: 0,
+          sessions: [session].concat(state.sessions),
+        }));
+      },
+
+      newSession2(folder?: Folder) {
+        const session = createEmptySession();
+
+        if (folder) {
+          const config = useAppConfig.getState();
+          const globalModelConfig = config.modelConfig;
+
+          session.folder = {
+            ...folder,
+            modelConfig: {
+              ...globalModelConfig,
+              ...folder.modelConfig,
+            },
+          };
+          session.topic = folder.name;
         }
 
         set((state) => ({
@@ -803,7 +832,6 @@ export const useChatStore = createPersistStore(
             },
           });
         }
-
         const summarizeIndex = Math.max(
           session.lastSummarizeIndex,
           session.clearContextIndex ?? 0,

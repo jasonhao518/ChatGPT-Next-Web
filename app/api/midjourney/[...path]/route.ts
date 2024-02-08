@@ -9,7 +9,7 @@ async function handle(
   req: NextRequest,
   { params }: { params: { path: string[] } },
 ) {
-  const authResult = auth(req, ModelProvider.MIDJOURNEY);
+  const authResult = auth(req, ModelProvider.MidJourney);
   if (authResult.error) {
     return NextResponse.json(authResult, {
       status: 401,
