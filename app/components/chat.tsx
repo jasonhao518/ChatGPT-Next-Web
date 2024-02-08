@@ -14,6 +14,7 @@ import RenameIcon from "../icons/rename.svg";
 import ExportIcon from "../icons/share.svg";
 import ReturnIcon from "../icons/return.svg";
 import CopyIcon from "../icons/copy.svg";
+import FolderIcon from "../icons/file-icon.svg";
 import LoadingIcon from "../icons/three-dots.svg";
 import PromptIcon from "../icons/prompt.svg";
 import MaskIcon from "../icons/mask.svg";
@@ -91,10 +92,52 @@ import { prettyObject } from "../utils/format";
 import { ExportMessageModal } from "./exporter";
 import { getClientConfig } from "../config/client";
 import { useAllModels } from "../utils/hooks";
+import { Folder, S3File } from "../store/folder";
 
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
 });
+
+const TagWithTooltip = ({
+  tagText,
+  folder,
+  tooltipText,
+}: {
+  tagText: string;
+  folder: string;
+  tooltipText: string;
+}) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const navigate = useNavigate();
+  return (
+    <div
+      className="chat-message-action-tag"
+      onClick={() => setShowTooltip(!showTooltip)}
+    >
+      {tagText}
+      {showTooltip && (
+        <div className="chat-message-action-tag-tooltip">
+          {tooltipText}
+          <button
+            onClick={() => {
+              let ref = tagText;
+              if (tagText.startsWith("[")) {
+                ref = ref.substring(1);
+              }
+              if (tagText.endsWith("]")) {
+                ref = ref.substring(0, ref.length - 1);
+              }
+
+              navigate(Path.Preview + "?folder=" + folder + "&ref=" + ref);
+            }}
+          >
+            {"details"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export function SessionConfigModel(props: { onClose: () => void }) {
   const chatStore = useChatStore();
@@ -421,6 +464,8 @@ export function ChatActions(props: {
   showPromptHints: () => void;
   imageSelected: (img: any) => void;
   hitBottom: boolean;
+  folder: Folder;
+  display: boolean;
 }) {
   const config = useAppConfig();
   const navigate = useNavigate();
@@ -428,7 +473,6 @@ export function ChatActions(props: {
 
   // switch themes
   const theme = config.theme;
-
   function nextTheme() {
     const themes = [Theme.Auto, Theme.Light, Theme.Dark];
     const themeIndex = themes.indexOf(theme);
@@ -462,12 +506,15 @@ export function ChatActions(props: {
 
   // switch model
   const currentModel = chatStore.currentSession().mask.modelConfig.model;
+  const currentFile = chatStore.currentSession().folder.selectedFile;
+
   const allModels = useAllModels();
   const models = useMemo(
     () => allModels.filter((m) => m.available),
     [allModels],
   );
   const [showModelSelector, setShowModelSelector] = useState(false);
+  const [showFolder, setShowFolder] = useState(false);
 
   useEffect(() => {
     // if current model is not available
@@ -521,21 +568,22 @@ export function ChatActions(props: {
           </>
         }
       />
-
-      <ChatAction
-        onClick={props.showPromptHints}
-        text={Locale.Chat.InputActions.Prompt}
-        icon={<PromptIcon />}
-      />
-
-      <ChatAction
-        onClick={() => {
-          navigate(Path.Masks);
-        }}
-        text={Locale.Chat.InputActions.Masks}
-        icon={<MaskIcon />}
-      />
-
+      {props.display && (
+        <ChatAction
+          onClick={props.showPromptHints}
+          text={Locale.Chat.InputActions.Prompt}
+          icon={<PromptIcon />}
+        />
+      )}
+      {props.display && (
+        <ChatAction
+          onClick={() => {
+            navigate(Path.Masks);
+          }}
+          text={Locale.Chat.InputActions.Masks}
+          icon={<MaskIcon />}
+        />
+      )}
       <ChatAction
         text={Locale.Chat.InputActions.Clear}
         icon={<BreakIcon />}
@@ -556,23 +604,23 @@ export function ChatActions(props: {
         text={currentModel}
         icon={<RobotIcon />}
       />
-
-      <ChatAction
-        onClick={selectImage}
-        text="选择图片"
-        icon={<UploadIcon />}
-        innerNode={
-          <input
-            type="file"
-            accept=".png,.jpg,.webp,.jpeg"
-            id="chat-image-file-select-upload"
-            style={{ display: "none" }}
-            onChange={onImageSelected}
-          />
-        }
-      />
-
-      {showModelSelector && (
+      {props.display && (
+        <ChatAction
+          onClick={selectImage}
+          text="选择图片"
+          icon={<UploadIcon />}
+          innerNode={
+            <input
+              type="file"
+              accept=".png,.jpg,.webp,.jpeg"
+              id="chat-image-file-select-upload"
+              style={{ display: "none" }}
+              onChange={onImageSelected}
+            />
+          }
+        />
+      )}
+      {props.display && showModelSelector && (
         <Selector
           defaultSelectedValue={currentModel}
           items={models.map((m) => ({
@@ -587,6 +635,42 @@ export function ChatActions(props: {
               session.mask.syncGlobalConfig = false;
             });
             showToast(s[0]);
+          }}
+        />
+      )}
+      {props.folder && props.folder.id != "" && (
+        <ChatAction
+          text={currentFile ? currentFile.name : props.folder.name}
+          icon={<FolderIcon />}
+          onClick={() => {
+            setShowFolder(true);
+          }}
+        />
+      )}
+      {showFolder && props.folder && props.folder.id != "" && (
+        <Selector
+          defaultSelectedValue={currentFile ? currentFile.id : ""}
+          items={[
+            { title: props.folder.name, value: "" },
+            ...props.folder?.files.map((m) => ({
+              title: m.index + ". " + m.name,
+              value: m.id,
+            })),
+          ]}
+          onClose={() => setShowFolder(false)}
+          onSelection={(s) => {
+            if (s.length === 0) return;
+            const folders = props.folder.files.filter((f) => f.id === s[0]);
+
+            chatStore.updateCurrentSession((session) => {
+              session.folder.selectedFile = (
+                folders.length > 0 ? folders[0] : null
+              ) as S3File;
+            });
+
+            showToast(
+              folders.map((item) => item.index + ". " + item.name).join(""),
+            );
           }}
         />
       )}
@@ -997,7 +1081,6 @@ function _Chat() {
   const [msgRenderIndex, _setMsgRenderIndex] = useState(
     Math.max(0, renderMessages.length - CHAT_PAGE_SIZE),
   );
-
   function setMsgRenderIndex(newIndex: number) {
     newIndex = Math.min(renderMessages.length - CHAT_PAGE_SIZE, newIndex);
     newIndex = Math.max(0, newIndex);
@@ -1018,7 +1101,8 @@ function _Chat() {
 
     const isTouchTopEdge = e.scrollTop <= edgeThreshold;
     const isTouchBottomEdge = bottomHeight >= e.scrollHeight - edgeThreshold;
-    const isHitBottom = bottomHeight >= e.scrollHeight - 10;
+    const isHitBottom =
+      bottomHeight >= e.scrollHeight - (isMobileScreen ? 4 : 10);
 
     const prevPageMsgIndex = msgRenderIndex - CHAT_PAGE_SIZE;
     const nextPageMsgIndex = msgRenderIndex + CHAT_PAGE_SIZE;
@@ -1325,6 +1409,22 @@ function _Chat() {
                       defaultShow={i >= messages.length - 6}
                     />
                   </div>
+                  <div className={styles["chat-message-action-tag-container"]}>
+                    {message.references?.map((ref, index) => (
+                      <TagWithTooltip
+                        key={index}
+                        folder={session.folder?.id}
+                        tagText={ref.referenceNumber}
+                        tooltipText={ref.quote}
+                      />
+                    ))}
+                    {message.image && (
+                      <img
+                        className={styles["chat-message-image"]}
+                        src={message.image}
+                      />
+                    )}
+                  </div>
                   {!isUser &&
                     message.model == "midjourney" &&
                     message.attr?.finished &&
@@ -1370,11 +1470,30 @@ function _Chat() {
           );
         })}
       </div>
-
       <div className={styles["chat-input-panel"]}>
         <PromptHints prompts={promptHints} onPromptSelect={onPromptSelect} />
-
         <ChatActions
+          display={session?.folder?.id === ""}
+          folder={session?.folder}
+          imageSelected={() => {}}
+          showPromptModal={() => setShowPromptModal(true)}
+          scrollToBottom={scrollToBottom}
+          hitBottom={hitBottom}
+          showPromptHints={() => {
+            // Click again to close
+            if (promptHints.length > 0) {
+              setPromptHints([]);
+              return;
+            }
+
+            inputRef.current?.focus();
+            setUserInput("/");
+            onSearch("");
+          }}
+        />
+        <ChatActions
+          display={session?.folder?.id === ""}
+          folder={session?.folder}
           showPromptModal={() => setShowPromptModal(true)}
           scrollToBottom={scrollToBottom}
           hitBottom={hitBottom}
