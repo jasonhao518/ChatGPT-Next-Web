@@ -532,6 +532,90 @@ export const useChatStore = createPersistStore(
         return recentMessages;
       },
 
+      refreshMessage(msg: ChatMessage, messageIndex: number) {
+        const session = get().currentSession();
+        const modelConfig = session.mask.modelConfig;
+        var api: ClientApi;
+        if (modelConfig.model === "gemini-pro") {
+          api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (modelConfig.model === "midjourney") {
+          api = new ClientApi(ModelProvider.MidJourney);
+        } else {
+          api = new ClientApi(ModelProvider.GPT);
+        }
+
+        // make request
+        api.llm.chat({
+          messages: [msg],
+          config: { ...modelConfig, stream: true },
+          onUpdate(message) {
+            msg.streaming = true;
+            if (message) {
+              msg.content = message;
+            }
+            get().updateCurrentSession((session) => {
+              session.messages = session.messages.concat();
+            });
+          },
+          onFinish(message) {
+            msg.streaming = false;
+            if (message) {
+              // handle references
+              const trimedMessage = message.trim();
+              if (trimedMessage.startsWith("```json")) {
+                const content = trimedMessage.substring(
+                  7,
+                  trimedMessage.length - 3,
+                );
+                const json = JSON.parse(content) as any;
+                // when submitting request, check the status
+                if (json?.status) {
+                  msg.status = json.status;
+                  msg.id = json.id;
+                  msg.content = `${json.status}, please click refresh button to update`;
+                }
+                if (json?.answer) {
+                  msg.content = json?.answer;
+                  msg.references = json?.references;
+                } else if (json?.image) {
+                  msg.content = json?.prompt;
+                  msg.images = [json?.image];
+                }
+              } else {
+                msg.content = message;
+              }
+              get().onNewMessage(msg);
+            }
+            ChatControllerPool.remove(session.id, msg.id);
+          },
+          onError(error) {
+            const isAborted = error.message.includes("aborted");
+            msg.content +=
+              "\n\n" +
+              prettyObject({
+                error: true,
+                message: error.message,
+              });
+            msg.streaming = false;
+            msg.isError = !isAborted;
+            get().updateCurrentSession((session) => {
+              session.messages = session.messages.concat();
+            });
+            ChatControllerPool.remove(session.id, msg.id ?? messageIndex);
+
+            console.error("[Chat] failed ", error);
+          },
+          onController(controller) {
+            // collect controller for stop/retry
+            ChatControllerPool.addController(
+              session.id,
+              msg.id ?? messageIndex,
+              controller,
+            );
+          },
+        });
+      },
+
       updateMessage(
         sessionIndex: number,
         messageIndex: number,

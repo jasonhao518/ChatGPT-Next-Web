@@ -1060,13 +1060,7 @@ function _Chat() {
       botMessage = message;
       if (message.status) {
         // refresh message status
-        chatStore.updateMessage(
-          chatStore.currentSessionIndex,
-          resendingIndex,
-          (message?: ChatMessage) => {
-            if (message) message.content = "updating";
-          },
-        );
+        chatStore.refreshMessage(message, resendingIndex);
       } else {
         // original logic here
         for (let i = resendingIndex; i >= 0; i -= 1) {
