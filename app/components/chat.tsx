@@ -141,7 +141,7 @@ function resizeImage(
 
               const resizedImage: ResizedImage = {
                 file: resizedFile,
-                base64: reader.result as string,
+                base64: URL.createObjectURL(resizedFile),
               };
 
               resolve(resizedImage);
