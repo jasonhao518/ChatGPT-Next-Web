@@ -95,6 +95,70 @@ import { getClientConfig } from "../config/client";
 import { useAllModels } from "../utils/hooks";
 import { Folder, S3File } from "../store/folder";
 
+interface ResizedImage {
+  file: File;
+  dataURL: string;
+}
+
+function resizeImage(
+  file: File,
+  maxWidth: number,
+  maxHeight: number,
+): Promise<ResizedImage> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const image = new Image();
+      image.src = reader.result as string;
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        let width = image.width;
+        let height = image.height;
+
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+
+        if (height > maxHeight) {
+          width *= maxHeight / height;
+          height = maxHeight;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        if (ctx) {
+          ctx.drawImage(image, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const resizedFile = new File([blob], file.name, {
+                type: file.type,
+                lastModified: Date.now(),
+              });
+
+              const resizedImage: ResizedImage = {
+                file: resizedFile,
+                dataURL: URL.createObjectURL(resizedFile),
+              };
+
+              resolve(resizedImage);
+            } else {
+              reject("blob not available");
+            }
+          }, file.type);
+        } else {
+          reject("ctx not available");
+        }
+      };
+    };
+    reader.onerror = (error) => reject(error);
+  });
+}
+
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
 });
@@ -482,10 +546,13 @@ export function ChatActions(props: {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = ".png,.jpg,.webp,.jpeg";
-
-    fileInput.onchange = (event: any) => {
+    const fileReader = new FileReader();
+    fileInput.onchange = async (event: any) => {
       const file = event.target.files[0];
-      const size = file.size;
+      const resizedImage = await resizeImage(file, 1024, 1024);
+      // Upload the resized image file or use the resized image data URL
+      console.log(resizedImage);
+      const size = resizedImage.file.size;
       fetch("/api/upload", {
         method: "POST",
         headers: {
@@ -510,14 +577,18 @@ export function ChatActions(props: {
               fileUrl = url + value;
             }
           });
-          formData.append("file", file!);
+          formData.append("file", resizedImage.file!);
 
           fetch(url, {
             method: "POST",
             body: formData,
           }).then((res) => {
             if (res.status === 204) {
-              props.imageSelected({ filename: file.name, url: fileUrl });
+              props.imageSelected({
+                filename: file.name,
+                url: fileUrl,
+                base64: resizedImage.dataURL,
+              });
             } else {
               alert("upload failed");
               return null;
@@ -1465,7 +1536,7 @@ function _Chat() {
           <div className={styles["chat-select-images"]}>
             {useImages.map((img: any, i) => (
               <img
-                src={img.url}
+                src={img.base64}
                 key={i}
                 onClick={() => {
                   setUseImages(useImages.filter((_, ii) => ii != i));
