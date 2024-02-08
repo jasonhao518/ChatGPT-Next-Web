@@ -1490,12 +1490,13 @@ function _Chat() {
                         tooltipText={ref.quote}
                       />
                     ))}
-                    {message.images && message.images.length == 1 && (
+                    {message.images?.map((image, index) => (
                       <img
+                        key={index}
                         className={styles["chat-message-image"]}
-                        src={message.images[0]}
+                        src={image}
                       />
-                    )}
+                    ))}
                   </div>
                   <div className={styles["chat-message-action-date"]}>
                     {isContext
