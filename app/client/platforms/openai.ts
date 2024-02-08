@@ -6,7 +6,12 @@ import {
   REQUEST_TIMEOUT_MS,
   ServiceProvider,
 } from "@/app/constant";
-import { useAccessStore, useAppConfig, useChatStore } from "@/app/store";
+import {
+  ChatMessage,
+  useAccessStore,
+  useAppConfig,
+  useChatStore,
+} from "@/app/store";
 
 import { ChatOptions, getHeaders, LLMApi, LLMModel, LLMUsage } from "../api";
 import Locale from "../../locales";
@@ -78,7 +83,7 @@ export class ChatGPTApi implements LLMApi {
         model: options.config.model,
       },
     };
-
+    const message = messages[0] as ChatMessage;
     const requestPayload = {
       messages,
       stream: options.config.stream,
@@ -98,13 +103,17 @@ export class ChatGPTApi implements LLMApi {
     options.onController?.(controller);
 
     try {
+      const headers = getHeaders();
+      if (options.refresh) {
+        headers["X-ID"] = message.id;
+      }
       const chatPath = this.path(OpenaiPath.ChatPath);
       const chatPayload = {
         options: { timeout: 80000 },
         method: "POST",
         body: JSON.stringify(requestPayload),
         signal: controller.signal,
-        headers: getHeaders(),
+        headers: headers,
         credentials: "include" as RequestCredentials,
       };
 
