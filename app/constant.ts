@@ -80,6 +80,7 @@ export enum ServiceProvider {
 
 export enum ModelProvider {
   GPT = "GPT",
+  MidJourney = "MidJourney",
   GeminiPro = "GeminiPro",
 }
 
@@ -177,6 +178,15 @@ export const DEFAULT_MODELS = [
       id: "google",
       providerName: "Google",
       providerType: "google",
+    },
+  },
+  {
+    name: "midjourney",
+    available: true,
+    provider: {
+      id: "midjourney",
+      providerName: "MidJourney",
+      providerType: "midjourney",
     },
   },
 ] as const;

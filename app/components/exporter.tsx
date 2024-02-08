@@ -309,6 +309,8 @@ export function PreviewActions(props: {
     var api: ClientApi;
     if (config.modelConfig.model === "gemini-pro") {
       api = new ClientApi(ModelProvider.GeminiPro);
+    } else if (config.modelConfig.model === "midjourney") {
+      api = new ClientApi(ModelProvider.MidJourney);
     } else {
       api = new ClientApi(ModelProvider.GPT);
     }

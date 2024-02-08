@@ -7,10 +7,10 @@ const tw: PartialLocaleType = {
     Unauthorized: "目前您的狀態是未授權，請前往[設定頁面](/#/auth)輸入授權碼。",
   },
   ChatItem: {
-    ChatItemCount: (count: number) => `${count} 則對話`,
+    ChatItemCount: (count: number) => `${count} 條對話`,
   },
   Chat: {
-    SubTitle: (count: number) => `您已經與 ChatGPT 進行了 ${count} 則對話`,
+    SubTitle: (count: number) => `您已經與 ChatGPT 進行了 ${count} 條對話`,
     Actions: {
       ChatList: "檢視訊息列表",
       CompressedHistory: "檢視壓縮後的歷史 Prompt",
@@ -120,7 +120,11 @@ const tw: PartialLocaleType = {
       Title: "歷史訊息長度壓縮閾值",
       SubTitle: "當未壓縮的歷史訊息超過該值時，將進行壓縮",
     },
-
+    Token: {
+      Title: "API Key",
+      SubTitle: "使用自己的 Key 可規避授權存取限制",
+      Placeholder: "OpenAI API Key",
+    },
     Usage: {
       Title: "帳戶餘額",
       SubTitle(used: any, total: any) {
@@ -128,9 +132,8 @@ const tw: PartialLocaleType = {
       },
       IsChecking: "正在檢查…",
       Check: "重新檢查",
-      NoAccess: "輸入 API Key 檢視餘額",
+      NoAccess: "輸入API Key查看餘額",
     },
-
     Model: "模型 (model)",
     Temperature: {
       Title: "隨機性 (temperature)",
@@ -207,7 +210,7 @@ const tw: PartialLocaleType = {
     SubTitle: "現在開始，與面具背後的靈魂思維碰撞",
     More: "搜尋更多",
     NotShow: "不再呈現",
-    ConfirmNoShow: "確認停用？停用後可以隨時在設定中重新啟用。",
+    ConfirmNoShow: "確認禁用？禁用後可以随時在設定中重新啟用。",
   },
   UI: {
     Confirm: "確認",

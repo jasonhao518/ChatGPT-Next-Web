@@ -14,7 +14,6 @@ import RenameIcon from "../icons/rename.svg";
 import ExportIcon from "../icons/share.svg";
 import ReturnIcon from "../icons/return.svg";
 import CopyIcon from "../icons/copy.svg";
-import FolderIcon from "../icons/file-icon.svg";
 import LoadingIcon from "../icons/three-dots.svg";
 import PromptIcon from "../icons/prompt.svg";
 import MaskIcon from "../icons/mask.svg";
@@ -28,6 +27,7 @@ import PinIcon from "../icons/pin.svg";
 import EditIcon from "../icons/rename.svg";
 import ConfirmIcon from "../icons/confirm.svg";
 import CancelIcon from "../icons/cancel.svg";
+import UploadIcon from "../icons/upload.svg";
 
 import LightIcon from "../icons/light.svg";
 import DarkIcon from "../icons/dark.svg";
@@ -35,6 +35,7 @@ import AutoIcon from "../icons/auto.svg";
 import BottomIcon from "../icons/bottom.svg";
 import StopIcon from "../icons/pause.svg";
 import RobotIcon from "../icons/robot.svg";
+import Image from "next/image";
 
 import {
   ChatMessage,
@@ -90,52 +91,10 @@ import { prettyObject } from "../utils/format";
 import { ExportMessageModal } from "./exporter";
 import { getClientConfig } from "../config/client";
 import { useAllModels } from "../utils/hooks";
-import { Folder, S3File } from "../store/folder";
 
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
 });
-
-const TagWithTooltip = ({
-  tagText,
-  folder,
-  tooltipText,
-}: {
-  tagText: string;
-  folder: string;
-  tooltipText: string;
-}) => {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const navigate = useNavigate();
-  return (
-    <div
-      className="chat-message-action-tag"
-      onClick={() => setShowTooltip(!showTooltip)}
-    >
-      {tagText}
-      {showTooltip && (
-        <div className="chat-message-action-tag-tooltip">
-          {tooltipText}
-          <button
-            onClick={() => {
-              let ref = tagText;
-              if (tagText.startsWith("[")) {
-                ref = ref.substring(1);
-              }
-              if (tagText.endsWith("]")) {
-                ref = ref.substring(0, ref.length - 1);
-              }
-
-              navigate(Path.Preview + "?folder=" + folder + "&ref=" + ref);
-            }}
-          >
-            {"details"}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export function SessionConfigModel(props: { onClose: () => void }) {
   const chatStore = useChatStore();
@@ -371,8 +330,10 @@ function ClearContextDivider() {
 
 function ChatAction(props: {
   text: string;
-  icon: JSX.Element;
+  icon?: JSX.Element;
+  innerNode?: JSX.Element;
   onClick: () => void;
+  style?: React.CSSProperties;
 }) {
   const iconRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
@@ -397,23 +358,29 @@ function ChatAction(props: {
       className={`${styles["chat-input-action"]} clickable`}
       onClick={() => {
         props.onClick();
-        setTimeout(updateWidth, 1);
+        iconRef ? setTimeout(updateWidth, 1) : undefined;
       }}
-      onMouseEnter={updateWidth}
-      onTouchStart={updateWidth}
+      onMouseEnter={props.icon ? updateWidth : undefined}
+      onTouchStart={props.icon ? updateWidth : undefined}
       style={
-        {
-          "--icon-width": `${width.icon}px`,
-          "--full-width": `${width.full}px`,
-        } as React.CSSProperties
+        props.icon
+          ? ({
+              "--icon-width": `${width.icon}px`,
+              "--full-width": `${width.full}px`,
+              ...props.style,
+            } as React.CSSProperties)
+          : props.style
       }
     >
-      <div ref={iconRef} className={styles["icon"]}>
-        {props.icon}
-      </div>
-      <div className={styles["text"]} ref={textRef}>
+      {props.icon ? (
+        <div ref={iconRef} className={styles["icon"]}>
+          {props.icon}
+        </div>
+      ) : null}
+      <div className={props.icon ? styles["text"] : undefined} ref={textRef}>
         {props.text}
       </div>
+      {props.innerNode}
     </div>
   );
 }
@@ -452,9 +419,8 @@ export function ChatActions(props: {
   showPromptModal: () => void;
   scrollToBottom: () => void;
   showPromptHints: () => void;
+  imageSelected: (img: any) => void;
   hitBottom: boolean;
-  folder: Folder;
-  display: boolean;
 }) {
   const config = useAppConfig();
   const navigate = useNavigate();
@@ -462,6 +428,7 @@ export function ChatActions(props: {
 
   // switch themes
   const theme = config.theme;
+
   function nextTheme() {
     const themes = [Theme.Auto, Theme.Light, Theme.Dark];
     const themeIndex = themes.indexOf(theme);
@@ -474,17 +441,33 @@ export function ChatActions(props: {
   const couldStop = ChatControllerPool.hasPending();
   const stopAll = () => ChatControllerPool.stopAll();
 
+  function selectImage() {
+    document.getElementById("chat-image-file-select-upload")?.click();
+  }
+
+  const onImageSelected = (e: any) => {
+    const file = e.target.files[0];
+    const filename = file.name;
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64 = reader.result;
+      props.imageSelected({
+        filename,
+        base64,
+      });
+    };
+    e.target.value = null;
+  };
+
   // switch model
   const currentModel = chatStore.currentSession().mask.modelConfig.model;
-  const currentFile = chatStore.currentSession().folder.selectedFile;
-
   const allModels = useAllModels();
   const models = useMemo(
     () => allModels.filter((m) => m.available),
     [allModels],
   );
   const [showModelSelector, setShowModelSelector] = useState(false);
-  const [showFolder, setShowFolder] = useState(false);
 
   useEffect(() => {
     // if current model is not available
@@ -538,22 +521,21 @@ export function ChatActions(props: {
           </>
         }
       />
-      {props.display && (
-        <ChatAction
-          onClick={props.showPromptHints}
-          text={Locale.Chat.InputActions.Prompt}
-          icon={<PromptIcon />}
-        />
-      )}
-      {props.display && (
-        <ChatAction
-          onClick={() => {
-            navigate(Path.Masks);
-          }}
-          text={Locale.Chat.InputActions.Masks}
-          icon={<MaskIcon />}
-        />
-      )}
+
+      <ChatAction
+        onClick={props.showPromptHints}
+        text={Locale.Chat.InputActions.Prompt}
+        icon={<PromptIcon />}
+      />
+
+      <ChatAction
+        onClick={() => {
+          navigate(Path.Masks);
+        }}
+        text={Locale.Chat.InputActions.Masks}
+        icon={<MaskIcon />}
+      />
+
       <ChatAction
         text={Locale.Chat.InputActions.Clear}
         icon={<BreakIcon />}
@@ -568,14 +550,29 @@ export function ChatActions(props: {
           });
         }}
       />
-      {props.display && (
-        <ChatAction
-          onClick={() => setShowModelSelector(true)}
-          text={currentModel}
-          icon={<RobotIcon />}
-        />
-      )}
-      {props.display && showModelSelector && (
+
+      <ChatAction
+        onClick={() => setShowModelSelector(true)}
+        text={currentModel}
+        icon={<RobotIcon />}
+      />
+
+      <ChatAction
+        onClick={selectImage}
+        text="选择图片"
+        icon={<UploadIcon />}
+        innerNode={
+          <input
+            type="file"
+            accept=".png,.jpg,.webp,.jpeg"
+            id="chat-image-file-select-upload"
+            style={{ display: "none" }}
+            onChange={onImageSelected}
+          />
+        }
+      />
+
+      {showModelSelector && (
         <Selector
           defaultSelectedValue={currentModel}
           items={models.map((m) => ({
@@ -590,42 +587,6 @@ export function ChatActions(props: {
               session.mask.syncGlobalConfig = false;
             });
             showToast(s[0]);
-          }}
-        />
-      )}
-      {props.folder && props.folder.id != "" && (
-        <ChatAction
-          text={currentFile ? currentFile.name : props.folder.name}
-          icon={<FolderIcon />}
-          onClick={() => {
-            setShowFolder(true);
-          }}
-        />
-      )}
-      {showFolder && props.folder && props.folder.id != "" && (
-        <Selector
-          defaultSelectedValue={currentFile ? currentFile.id : ""}
-          items={[
-            { title: props.folder.name, value: "" },
-            ...props.folder?.files.map((m) => ({
-              title: m.index + ". " + m.name,
-              value: m.id,
-            })),
-          ]}
-          onClose={() => setShowFolder(false)}
-          onSelection={(s) => {
-            if (s.length === 0) return;
-            const folders = props.folder.files.filter((f) => f.id === s[0]);
-
-            chatStore.updateCurrentSession((session) => {
-              session.folder.selectedFile = (
-                folders.length > 0 ? folders[0] : null
-              ) as S3File;
-            });
-
-            showToast(
-              folders.map((item) => item.index + ". " + item.name).join(""),
-            );
           }}
         />
       )}
@@ -707,6 +668,8 @@ function _Chat() {
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [userInput, setUserInput] = useState("");
+  const [useImages, setUseImages] = useState<any[]>([]);
+  const [mjImageMode, setMjImageMode] = useState<string>("IMAGINE");
   const [isLoading, setIsLoading] = useState(false);
   const { submitKey, shouldSubmit } = useSubmitHandler();
   const { scrollRef, setAutoScroll, scrollDomToBottom } = useScrollToBottom();
@@ -780,8 +743,16 @@ function _Chat() {
     }
   };
 
-  const doSubmit = (userInput: string) => {
-    if (userInput.trim() === "") return;
+  const doSubmit = async (userInput: string, extAttr?: any) => {
+    userInput = userInput.trim();
+    if (useImages.length > 0) {
+      if (mjImageMode === "IMAGINE" && userInput == "") {
+        alert(Locale.Midjourney.NeedInputUseImgPrompt);
+        return;
+      }
+    } else {
+      if (userInput == "") return;
+    }
     const matchCommand = chatCommands.match(userInput);
     if (matchCommand.matched) {
       setUserInput("");
@@ -789,13 +760,27 @@ function _Chat() {
       matchCommand.invoke();
       return;
     }
-    setIsLoading(true);
-    chatStore.onUserInput(userInput).then(() => setIsLoading(false));
-    localStorage.setItem(LAST_INPUT_KEY, userInput);
-    setUserInput("");
-    setPromptHints([]);
-    if (!isMobileScreen) inputRef.current?.focus();
-    setAutoScroll(true);
+    try {
+      const res: any = await chatStore.onUserInput(userInput, {
+        useImages,
+        mjImageMode,
+        setAutoScroll,
+        botMsg: extAttr?.botMsg,
+      });
+      if (res !== false) {
+        localStorage.setItem(LAST_INPUT_KEY, userInput);
+        setUserInput("");
+        setUseImages([]);
+        setMjImageMode("BLEND");
+        setPromptHints([]);
+        if (!isMobileScreen) inputRef.current?.focus();
+        setAutoScroll(true);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onPromptSelect = (prompt: RenderPompt) => {
@@ -1012,6 +997,7 @@ function _Chat() {
   const [msgRenderIndex, _setMsgRenderIndex] = useState(
     Math.max(0, renderMessages.length - CHAT_PAGE_SIZE),
   );
+
   function setMsgRenderIndex(newIndex: number) {
     newIndex = Math.min(renderMessages.length - CHAT_PAGE_SIZE, newIndex);
     newIndex = Math.max(0, newIndex);
@@ -1032,8 +1018,7 @@ function _Chat() {
 
     const isTouchTopEdge = e.scrollTop <= edgeThreshold;
     const isTouchBottomEdge = bottomHeight >= e.scrollHeight - edgeThreshold;
-    const isHitBottom =
-      bottomHeight >= e.scrollHeight - (isMobileScreen ? 4 : 10);
+    const isHitBottom = bottomHeight >= e.scrollHeight - 10;
 
     const prevPageMsgIndex = msgRenderIndex - CHAT_PAGE_SIZE;
     const nextPageMsgIndex = msgRenderIndex + CHAT_PAGE_SIZE;
@@ -1112,6 +1097,13 @@ function _Chat() {
       }
     },
   });
+
+  // messages?.forEach((msg) => {
+  //     console.log('each')
+  //     if (msg.model === "midjourney" && msg.attr?.taskId) {
+  //         chatStore.fetchMidjourneyStatus(msg);
+  //     }
+  // });
 
   // edit / insert message modal
   const [isEditingMessage, setIsEditingMessage] = useState(false);
@@ -1333,22 +1325,39 @@ function _Chat() {
                       defaultShow={i >= messages.length - 6}
                     />
                   </div>
-                  <div className={styles["chat-message-action-tag-container"]}>
-                    {message.references?.map((ref, index) => (
-                      <TagWithTooltip
-                        key={index}
-                        folder={session.folder?.id}
-                        tagText={ref.referenceNumber}
-                        tooltipText={ref.quote}
-                      />
-                    ))}
-                    {message.image && (
-                      <img
-                        className={styles["chat-message-image"]}
-                        src={message.image}
-                      />
+                  {!isUser &&
+                    message.model == "midjourney" &&
+                    message.attr?.finished &&
+                    message.attr?.taskId &&
+                    message.attr?.options?.length && (
+                      <div
+                        className={[
+                          styles["chat-message-actions"],
+                          styles["column-flex"],
+                        ].join(" ")}
+                      >
+                        <div
+                          style={{ marginTop: "6px" }}
+                          className={styles["chat-input-actions"]}
+                        >
+                          {message.attr?.options.map((item: any) => (
+                            <ChatAction
+                              style={{ marginBottom: "6px" }}
+                              key={message.attr.taskId + item.custom}
+                              text={item.label}
+                              onClick={() =>
+                                doSubmit(
+                                  `/mj CUSTOM::${message.attr.taskId}::${item.custom}`,
+                                  {
+                                    botMsg: message.attr,
+                                  },
+                                )
+                              }
+                            />
+                          ))}
+                        </div>
+                      </div>
                     )}
-                  </div>
                   <div className={styles["chat-message-action-date"]}>
                     {isContext
                       ? Locale.Chat.IsContext
@@ -1361,11 +1370,11 @@ function _Chat() {
           );
         })}
       </div>
+
       <div className={styles["chat-input-panel"]}>
         <PromptHints prompts={promptHints} onPromptSelect={onPromptSelect} />
+
         <ChatActions
-          display={session?.folder?.id === ""}
-          folder={session?.folder}
           showPromptModal={() => setShowPromptModal(true)}
           scrollToBottom={scrollToBottom}
           hitBottom={hitBottom}
@@ -1380,12 +1389,61 @@ function _Chat() {
             setUserInput("/");
             onSearch("");
           }}
+          imageSelected={(img: any) => {
+            if (useImages.length >= 5) {
+              alert(Locale.Midjourney.SelectImgMax(5));
+              return;
+            }
+            setUseImages([...useImages, img]);
+          }}
         />
+        {useImages.length > 0 && (
+          <div className={styles["chat-select-images"]}>
+            {useImages.map((img: any, i) => (
+              <img
+                src={img.base64}
+                key={i}
+                onClick={() => {
+                  setUseImages(useImages.filter((_, ii) => ii != i));
+                }}
+                title={img.filename}
+                alt={img.filename}
+              />
+            ))}
+            <div style={{ fontSize: "12px", marginBottom: "5px" }}>
+              {[
+                { name: Locale.Midjourney.ModeImagineUseImg, value: "IMAGINE" },
+                { name: Locale.Midjourney.ModeBlend, value: "BLEND" },
+                { name: Locale.Midjourney.ModeDescribe, value: "DESCRIBE" },
+              ].map((item, i) => (
+                <label key={i}>
+                  <input
+                    type="radio"
+                    name="mj-img-mode"
+                    checked={mjImageMode == item.value}
+                    value={item.value}
+                    onChange={(e) => {
+                      setMjImageMode(e.target.value);
+                    }}
+                  />
+                  <span>{item.name}</span>
+                </label>
+              ))}
+            </div>
+            <div style={{ fontSize: "12px", marginBottom: "10px" }}>
+              <small>{Locale.Midjourney.HasImgTip}</small>
+            </div>
+          </div>
+        )}
         <div className={styles["chat-input-panel-inner"]}>
           <textarea
             ref={inputRef}
             className={styles["chat-input"]}
-            placeholder={Locale.Chat.Input(submitKey)}
+            placeholder={
+              useImages.length > 0 && mjImageMode != "IMAGINE"
+                ? Locale.Midjourney.InputDisabled
+                : Locale.Chat.Input(submitKey)
+            }
             onInput={(e) => onInput(e.currentTarget.value)}
             value={userInput}
             onKeyDown={onInputKeyDown}
@@ -1396,6 +1454,7 @@ function _Chat() {
             style={{
               fontSize: config.fontSize,
             }}
+            disabled={useImages.length > 0 && mjImageMode != "IMAGINE"}
           />
           <IconButton
             icon={<SendWhiteIcon />}
