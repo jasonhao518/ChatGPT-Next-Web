@@ -347,6 +347,8 @@ export const useChatStore = createPersistStore(
         var api: ClientApi;
         if (modelConfig.model === "gemini-pro") {
           api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (modelConfig.model === "midjourney") {
+          api = new ClientApi(ModelProvider.MidJourney);
         } else {
           api = new ClientApi(ModelProvider.GPT);
         }
@@ -550,6 +552,8 @@ export const useChatStore = createPersistStore(
         var api: ClientApi;
         if (modelConfig.model === "gemini-pro") {
           api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (config.modelConfig.model === "midjourney") {
+          api = new ClientApi(ModelProvider.MidJourney);
         } else {
           api = new ClientApi(ModelProvider.GPT);
         }
