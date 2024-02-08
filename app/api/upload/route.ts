@@ -28,10 +28,15 @@ export async function POST(req: NextRequest) {
         },
       );
     }
-    const client = new S3Client({ region: process.env.AWS_REGION });
+    const bucket = folder
+      ? process.env.AWS_BUCKET_NAME!
+      : process.env.AWS_IMG_BUCKET_NAME!;
+    const region = folder ? process.env.AWS_REGION : process.env.AWS_IMG_REGION;
+    const client = new S3Client({ region: region });
+    const path = folder ? folder + "/" + fileId : token.id + "/" + fileId;
     const { url, fields } = await createPresignedPost(client, {
-      Bucket: process.env.AWS_BUCKET_NAME!,
-      Key: folder + "/" + fileId,
+      Bucket: bucket,
+      Key: path,
       Conditions: [
         ["content-length-range", 0, size], // up to 20 MB
         ["starts-with", "$Content-Type", contentType],

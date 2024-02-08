@@ -37,6 +37,7 @@ import BottomIcon from "../icons/bottom.svg";
 import StopIcon from "../icons/pause.svg";
 import RobotIcon from "../icons/robot.svg";
 import Image from "next/image";
+import { v4 as uuidv4 } from "uuid";
 
 import {
   ChatMessage,
@@ -482,19 +483,55 @@ export function ChatActions(props: {
     fileInput.type = "file";
     fileInput.accept = ".png,.jpg,.webp,.jpeg";
 
-    fileInput.onchange = (e: any) => {
-      const file = e.target.files[0];
-      const filename = file.name;
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64 = reader.result;
-        props.imageSelected({
-          filename,
-          base64,
-        });
-      };
-      e.target.value = null;
+    fileInput.onchange = (event: any) => {
+      const file = event.target.files[0];
+      const size = file.size;
+      fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-transaction-id": uuidv4(),
+        },
+        body: JSON.stringify({
+          size,
+          filename: file?.name,
+          contentType: file?.type,
+        }),
+      }).then(async (response) => {
+        if (response.ok) {
+          const { url, fields } = await response.json();
+
+          const formData = new FormData();
+          let fileUrl: string | null = null;
+          Object.entries(fields).forEach(([key, value]) => {
+            formData.append(key, value as string);
+            if ("key" === key) {
+              fileUrl = url + value;
+            }
+          });
+          formData.append("file", file!);
+
+          fetch(url, {
+            method: "POST",
+            body: formData,
+          }).then((res) => {
+            if (res.status === 204) {
+              props.imageSelected({ filename: file.name, url: fileUrl });
+            } else {
+              alert("upload failed");
+              return null;
+            }
+          });
+        } else {
+          const { error } = await response.json();
+          if ("NO_QUOTA" === error) {
+            // TODO use localise error message
+            showToast(error);
+          } else {
+            showToast(error);
+          }
+        }
+      });
     };
 
     fileInput.click();
@@ -1427,7 +1464,7 @@ function _Chat() {
           <div className={styles["chat-select-images"]}>
             {useImages.map((img: any, i) => (
               <img
-                src={img.base64}
+                src={img.url}
                 key={i}
                 onClick={() => {
                   setUseImages(useImages.filter((_, ii) => ii != i));
