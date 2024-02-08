@@ -1544,29 +1544,6 @@ function _Chat() {
                 alt={img.filename}
               />
             ))}
-            <div style={{ fontSize: "12px", marginBottom: "5px" }}>
-              {[
-                { name: Locale.Midjourney.ModeImagineUseImg, value: "IMAGINE" },
-                { name: Locale.Midjourney.ModeBlend, value: "BLEND" },
-                { name: Locale.Midjourney.ModeDescribe, value: "DESCRIBE" },
-              ].map((item, i) => (
-                <label key={i}>
-                  <input
-                    type="radio"
-                    name="mj-img-mode"
-                    checked={mjImageMode == item.value}
-                    value={item.value}
-                    onChange={(e) => {
-                      setMjImageMode(e.target.value);
-                    }}
-                  />
-                  <span>{item.name}</span>
-                </label>
-              ))}
-            </div>
-            <div style={{ fontSize: "12px", marginBottom: "10px" }}>
-              <small>{Locale.Midjourney.HasImgTip}</small>
-            </div>
           </div>
         )}
         <div className={styles["chat-input-panel-inner"]}>
