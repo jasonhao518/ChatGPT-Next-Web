@@ -1058,10 +1058,17 @@ function _Chat() {
     if (message.role === "assistant") {
       // if it is resending a bot's message, find the user input for it
       botMessage = message;
-      for (let i = resendingIndex; i >= 0; i -= 1) {
-        if (session.messages[i].role === "user") {
-          userMessage = session.messages[i];
-          break;
+      if (message.status) {
+        // refresh message status
+        setIsLoading(true);
+        chatStore.onUserInput("updating!").then(() => setIsLoading(false));
+      } else {
+        // original logic here
+        for (let i = resendingIndex; i >= 0; i -= 1) {
+          if (session.messages[i].role === "user") {
+            userMessage = session.messages[i];
+            break;
+          }
         }
       }
     } else if (message.role === "user") {

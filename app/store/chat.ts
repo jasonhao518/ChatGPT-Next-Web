@@ -27,6 +27,7 @@ export type Reference = {
 export type ChatMessage = RequestMessage & {
   date: string;
   references?: Array<Reference>;
+  status?: string;
   streaming?: boolean;
   images?: string[];
   isError?: boolean;
@@ -378,8 +379,13 @@ export const useChatStore = createPersistStore(
                   trimedMessage.length - 3,
                 );
                 const json = JSON.parse(content) as any;
+                // when submitting request, check the status
+                if (json?.status) {
+                  botMessage.status = json.status;
+                  botMessage.id = json.id;
+                  botMessage.content = `${json.status}, please click refresh button to update`;
+                }
                 if (json?.answer) {
-                  console.log(json);
                   botMessage.content = json?.answer;
                   botMessage.references = json?.references;
                 } else if (json?.image) {
