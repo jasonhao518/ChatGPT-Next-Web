@@ -924,7 +924,7 @@ function _Chat() {
   };
 
   const doSubmit = (userInput: string) => {
-    if (userInput.trim() === "") return;
+    if (userInput.trim() === "" && useImages.length === 0) return;
     const matchCommand = chatCommands.match(userInput);
     if (matchCommand.matched) {
       setUserInput("");
@@ -933,7 +933,12 @@ function _Chat() {
       return;
     }
     setIsLoading(true);
-    chatStore.onUserInput(userInput).then(() => setIsLoading(false));
+    chatStore
+      .onUserInput(
+        userInput,
+        useImages.map((item) => item.url),
+      )
+      .then(() => setIsLoading(false));
     localStorage.setItem(LAST_INPUT_KEY, userInput);
     setUserInput("");
     setPromptHints([]);
@@ -1485,10 +1490,10 @@ function _Chat() {
                         tooltipText={ref.quote}
                       />
                     ))}
-                    {message.image && (
+                    {message.images && message.images.length == 1 && (
                       <img
                         className={styles["chat-message-image"]}
-                        src={message.image}
+                        src={message.images[0]}
                       />
                     )}
                   </div>
@@ -1528,7 +1533,7 @@ function _Chat() {
               alert(Locale.Midjourney.SelectImgMax(5));
               return;
             }
-            setUseImages([...useImages, img]);
+            //setUseImages([...useImages, img]);
           }}
         />
         {useImages.length > 0 && (

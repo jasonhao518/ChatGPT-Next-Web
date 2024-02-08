@@ -28,7 +28,7 @@ export type ChatMessage = RequestMessage & {
   date: string;
   references?: Array<Reference>;
   streaming?: boolean;
-  image?: string;
+  images?: string[];
   isError?: boolean;
   id: string;
   model?: ModelType;
@@ -309,7 +309,7 @@ export const useChatStore = createPersistStore(
         get().summarizeSession();
       },
 
-      async onUserInput(content: string) {
+      async onUserInput(content: string, images?: string[]) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
@@ -319,6 +319,7 @@ export const useChatStore = createPersistStore(
         const userMessage: ChatMessage = createMessage({
           role: "user",
           content: userContent,
+          images: images,
         });
 
         const botMessage: ChatMessage = createMessage({
@@ -383,7 +384,7 @@ export const useChatStore = createPersistStore(
                   botMessage.references = json?.references;
                 } else if (json?.image) {
                   botMessage.content = json?.prompt;
-                  botMessage.image = json?.image;
+                  botMessage.images = [json?.image];
                 }
               } else {
                 botMessage.content = message;
