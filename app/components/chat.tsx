@@ -1533,7 +1533,7 @@ function _Chat() {
               alert(Locale.Midjourney.SelectImgMax(5));
               return;
             }
-            //setUseImages([...useImages, img]);
+            setUseImages([...useImages, img]);
           }}
         />
         {useImages.length > 0 && (
