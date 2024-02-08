@@ -548,7 +548,7 @@ export function ChatActions(props: {
     const fileReader = new FileReader();
     fileInput.onchange = async (event: any) => {
       const file = event.target.files[0];
-      const resizedImage = await resizeImage(file, 1024, 1024);
+      const resizedImage = await resizeImage(file, 2048, 2048);
       // Upload the resized image file or use the resized image data URL
       console.log(resizedImage);
       const size = resizedImage.file.size;
