@@ -1061,6 +1061,7 @@ function _Chat() {
       if (message.status) {
         // refresh message status
         chatStore.refreshMessage(message, resendingIndex);
+        return;
       } else {
         // original logic here
         for (let i = resendingIndex; i >= 0; i -= 1) {
