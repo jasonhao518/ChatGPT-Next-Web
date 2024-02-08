@@ -1061,7 +1061,13 @@ function _Chat() {
       if (message.status) {
         // refresh message status
         setIsLoading(true);
-        chatStore.onUserInput("updating!").then(() => setIsLoading(false));
+        chatStore.updateMessage(
+          chatStore.currentSessionIndex,
+          resendingIndex,
+          (message?: ChatMessage) => {
+            if (message) message.content = "updating";
+          },
+        );
       } else {
         // original logic here
         for (let i = resendingIndex; i >= 0; i -= 1) {
