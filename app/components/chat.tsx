@@ -1475,25 +1475,6 @@ function _Chat() {
         <ChatActions
           display={session?.folder?.id === ""}
           folder={session?.folder}
-          imageSelected={() => {}}
-          showPromptModal={() => setShowPromptModal(true)}
-          scrollToBottom={scrollToBottom}
-          hitBottom={hitBottom}
-          showPromptHints={() => {
-            // Click again to close
-            if (promptHints.length > 0) {
-              setPromptHints([]);
-              return;
-            }
-
-            inputRef.current?.focus();
-            setUserInput("/");
-            onSearch("");
-          }}
-        />
-        <ChatActions
-          display={session?.folder?.id === ""}
-          folder={session?.folder}
           showPromptModal={() => setShowPromptModal(true)}
           scrollToBottom={scrollToBottom}
           hitBottom={hitBottom}
