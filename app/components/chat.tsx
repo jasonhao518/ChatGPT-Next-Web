@@ -1060,7 +1060,6 @@ function _Chat() {
       botMessage = message;
       if (message.status) {
         // refresh message status
-        setIsLoading(true);
         chatStore.updateMessage(
           chatStore.currentSessionIndex,
           resendingIndex,
