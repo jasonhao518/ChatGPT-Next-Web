@@ -494,6 +494,7 @@ export function ChatActions(props: {
         },
         body: JSON.stringify({
           size,
+          fileId: uuidv4(),
           filename: file?.name,
           contentType: file?.type,
         }),
