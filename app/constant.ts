@@ -89,6 +89,11 @@ export const OpenaiPath = {
   ListModelPath: "v1/models",
 };
 
+export const MidJourneyPath = {
+  ChatPath: "midjourney",
+  ListModelPath: "v1/models",
+};
+
 export const Azure = {
   ExampleEndpoint: "https://{resource-url}/openai/deployments/{deploy-id}",
 };
