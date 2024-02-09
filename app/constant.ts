@@ -132,6 +132,7 @@ export const DEFAULT_MODELS = [
   {
     name: "gpt-4",
     available: true,
+    type: "chat",
     provider: {
       id: "openai",
       providerName: "OpenAI",
@@ -142,6 +143,7 @@ export const DEFAULT_MODELS = [
   {
     name: "gpt-4-32k",
     available: true,
+    type: "chat",
     provider: {
       id: "openai",
       providerName: "OpenAI",
@@ -152,6 +154,7 @@ export const DEFAULT_MODELS = [
   {
     name: "gpt-3.5-turbo",
     available: true,
+    type: "chat",
     provider: {
       id: "openai",
       providerName: "OpenAI",
@@ -161,6 +164,7 @@ export const DEFAULT_MODELS = [
   {
     name: "gpt-3.5-turbo-16k",
     available: true,
+    type: "chat",
     provider: {
       id: "openai",
       providerName: "OpenAI",
@@ -170,6 +174,7 @@ export const DEFAULT_MODELS = [
   {
     name: "dall-e-3",
     available: true,
+    type: "image",
     provider: {
       id: "openai",
       providerName: "OpenAI",
@@ -179,6 +184,7 @@ export const DEFAULT_MODELS = [
   {
     name: "gemini-pro",
     available: true,
+    type: "chat",
     provider: {
       id: "google",
       providerName: "Google",
@@ -188,8 +194,19 @@ export const DEFAULT_MODELS = [
   {
     name: "midjourney",
     available: true,
+    type: "image",
     provider: {
       id: "midjourney",
+      providerName: "MidJourney",
+      providerType: "midjourney",
+    },
+  },
+  {
+    name: "stable-diffusion",
+    available: true,
+    type: "image",
+    provider: {
+      id: "stable-diffusion",
       providerName: "MidJourney",
       providerType: "midjourney",
     },
