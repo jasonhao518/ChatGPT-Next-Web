@@ -345,10 +345,12 @@ export const useChatStore = createPersistStore(
             botMessage,
           ]);
         });
-
+        console.log(modelConfig.model);
         var api: ClientApi;
         if (modelConfig.model === "gemini-pro") {
           api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (modelConfig.model === "stable-diffusion") {
+          api = new ClientApi(ModelProvider.MidJourney);
         } else if (modelConfig.model === "midjourney") {
           api = new ClientApi(ModelProvider.MidJourney);
         } else {
@@ -538,6 +540,8 @@ export const useChatStore = createPersistStore(
         var api: ClientApi;
         if (modelConfig.model === "gemini-pro") {
           api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (modelConfig.model === "stable-diffusion") {
+          api = new ClientApi(ModelProvider.MidJourney);
         } else if (modelConfig.model === "midjourney") {
           api = new ClientApi(ModelProvider.MidJourney);
         } else {
@@ -645,6 +649,8 @@ export const useChatStore = createPersistStore(
         var api: ClientApi;
         if (modelConfig.model === "gemini-pro") {
           api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (modelConfig.model === "stable-diffusion") {
+          api = new ClientApi(ModelProvider.MidJourney);
         } else if (config.modelConfig.model === "midjourney") {
           api = new ClientApi(ModelProvider.MidJourney);
         } else {

@@ -186,6 +186,8 @@ export function useLoadData() {
   var api: ClientApi;
   if (config.modelConfig.model === "gemini-pro") {
     api = new ClientApi(ModelProvider.GeminiPro);
+  } else if (config.modelConfig.model === "stable-diffusion") {
+    api = new ClientApi(ModelProvider.MidJourney);
   } else if (config.modelConfig.model === "midjourney") {
     api = new ClientApi(ModelProvider.MidJourney);
   } else {
