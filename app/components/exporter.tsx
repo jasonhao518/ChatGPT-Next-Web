@@ -310,7 +310,7 @@ export function PreviewActions(props: {
     if (config.modelConfig.model === "gemini-pro") {
       api = new ClientApi(ModelProvider.GeminiPro);
     } else if (config.modelConfig.model === "stable-diffusion") {
-      api = new ClientApi(ModelProvider.MidJourney);
+      api = new ClientApi(ModelProvider.StableDiffusion);
     } else if (config.modelConfig.model === "midjourney") {
       api = new ClientApi(ModelProvider.MidJourney);
     } else {

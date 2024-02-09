@@ -82,6 +82,7 @@ export enum ModelProvider {
   GPT = "GPT",
   MidJourney = "MidJourney",
   GeminiPro = "GeminiPro",
+  StableDiffusion = "StableDiffusion",
 }
 
 export const OpenaiPath = {
@@ -91,6 +92,11 @@ export const OpenaiPath = {
 
 export const MidJourneyPath = {
   ChatPath: "midjourney",
+  ListModelPath: "v1/models",
+};
+
+export const StableDiffusionPath = {
+  ChatPath: "stable-diffusion",
   ListModelPath: "v1/models",
 };
 
@@ -206,9 +212,9 @@ export const DEFAULT_MODELS = [
     available: true,
     type: "image",
     provider: {
-      id: "midjourney",
-      providerName: "MidJourney",
-      providerType: "midjourney",
+      id: "stable-diffusion",
+      providerName: "StableDiffusion",
+      providerType: "StableDiffusion",
     },
   },
 ] as const;

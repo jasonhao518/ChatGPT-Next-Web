@@ -10,6 +10,7 @@ import { ChatMessage, ModelType, useAccessStore, useChatStore } from "../store";
 import { ChatGPTApi } from "./platforms/openai";
 import { GeminiProApi } from "./platforms/google";
 import { MidJourneyApi } from "./platforms/midjourney";
+import { StableDiffusionApi } from "./platforms/stablediffusion";
 
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
@@ -94,6 +95,9 @@ export class ClientApi {
       return;
     } else if (provider === ModelProvider.MidJourney) {
       this.llm = new MidJourneyApi();
+      return;
+    } else if (provider === ModelProvider.StableDiffusion) {
+      this.llm = new StableDiffusionApi();
       return;
     }
     this.llm = new ChatGPTApi();
