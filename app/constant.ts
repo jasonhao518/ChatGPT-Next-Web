@@ -206,7 +206,7 @@ export const DEFAULT_MODELS = [
     available: true,
     type: "image",
     provider: {
-      id: "stable-diffusion",
+      id: "midjourney",
       providerName: "MidJourney",
       providerType: "midjourney",
     },
