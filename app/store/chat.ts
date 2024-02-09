@@ -637,6 +637,7 @@ export const useChatStore = createPersistStore(
       },
 
       summarizeSession() {
+        return;
         const config = useAppConfig.getState();
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
