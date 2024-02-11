@@ -115,7 +115,7 @@ export class ClientApi {
         from: m.role === "user" ? "human" : "gpt",
         value:
           m.content +
-          '<img class="chat_chat-message-image__KevSv" src="https://chatlogimg.s3.ap-northeast-1.amazonaws.com/dfcd4b04-be3e-4de8-8402-da1cc6258e1a">',
+          '<img class="chat_chat-message-image__KevSv" src="https://chatlogimg.s3.ap-northeast-1.amazonaws.com/dfcd4b04-be3e-4de8-8402-da1cc6258e1a" />',
       }))
       .concat([
         {
