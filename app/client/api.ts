@@ -113,11 +113,7 @@ export class ClientApi {
     const msgs = messages
       .map((m) => ({
         from: m.role === "user" ? "human" : "gpt",
-        value:
-          m.content +
-          '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"> \
-        <image href="https://chatlogimg.s3.ap-northeast-1.amazonaws.com/dfcd4b04-be3e-4de8-8402-da1cc6258e1a" width="200" height="200"/> \
-      </svg>',
+        value: m.content,
       }))
       .concat([
         {

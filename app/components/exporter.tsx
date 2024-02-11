@@ -588,6 +588,13 @@ export function ImagePreviewer(props: {
                   fontSize={config.fontSize}
                   defaultShow
                 />
+                {m.images?.map((image, index) => (
+                  <img
+                    key={index}
+                    className={styles["chat-message-image"]}
+                    src={image}
+                  />
+                ))}
               </div>
             </div>
           );
