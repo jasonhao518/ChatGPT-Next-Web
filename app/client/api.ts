@@ -113,7 +113,9 @@ export class ClientApi {
     const msgs = messages
       .map((m) => ({
         from: m.role === "user" ? "human" : "gpt",
-        value: m.content,
+        value:
+          m.content +
+          '<img class="chat_chat-message-image__KevSv" src="https://chatlogimg.s3.ap-northeast-1.amazonaws.com/dfcd4b04-be3e-4de8-8402-da1cc6258e1a">',
       }))
       .concat([
         {
@@ -128,7 +130,7 @@ export class ClientApi {
     console.log("[Share]", messages, msgs);
     const clientConfig = getClientConfig();
     const proxyUrl = "/sharegpt";
-    const rawUrl = "https://share.chatlog.ai/api/conversations";
+    const rawUrl = "https://sharegpt.com/api/conversations";
     const shareUrl = clientConfig?.isApp ? rawUrl : proxyUrl;
     const res = await fetch(shareUrl, {
       body: JSON.stringify({
@@ -144,7 +146,7 @@ export class ClientApi {
     const resJson = await res.json();
     console.log("[Share]", resJson);
     if (resJson.id) {
-      return `https://share.chatlog.ai/c/${resJson.id}`;
+      return `https://shareg.pt/${resJson.id}`;
     }
   }
 }
