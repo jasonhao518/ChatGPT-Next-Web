@@ -591,6 +591,7 @@ export function ImagePreviewer(props: {
                 {m.images?.map((image, index) => (
                   <img
                     key={index}
+                    crossOrigin="anonymous"
                     className={styles["chat-message-image"]}
                     src={image}
                   />
