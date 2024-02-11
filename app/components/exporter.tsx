@@ -593,7 +593,10 @@ export function ImagePreviewer(props: {
                     key={index}
                     crossOrigin="anonymous"
                     className={styles["chat-message-image"]}
-                    src={image}
+                    src={image.replaceAll(
+                      "https://chatlogimg.s3.ap-northeast-1.amazonaws.com",
+                      "/img",
+                    )}
                   />
                 ))}
               </div>

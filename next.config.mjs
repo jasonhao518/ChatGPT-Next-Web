@@ -74,6 +74,10 @@ if (mode !== "export") {
         destination: "https://cdn.discordapp.com/:path*",
       },
       {
+        source: "/img/:path*",
+        destination: "https://chatlogimg.s3.ap-northeast-1.amazonaws.com/:path*",
+      },
+      {
         source: "/google-fonts/:path*",
         destination: "https://fonts.googleapis.com/:path*",
       },
