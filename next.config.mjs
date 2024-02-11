@@ -79,7 +79,7 @@ if (mode !== "export") {
       },
       {
         source: "/sharegpt",
-        destination: "https://sharegpt.com/api/conversations",
+        destination: "https://share.chatlog.ai/api/conversations",
       },
     ];
 
