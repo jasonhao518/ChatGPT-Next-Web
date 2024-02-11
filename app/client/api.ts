@@ -144,7 +144,7 @@ export class ClientApi {
     const resJson = await res.json();
     console.log("[Share]", resJson);
     if (resJson.id) {
-      return `https://share.chatlog.ai/${resJson.id}`;
+      return `https://share.chatlog.ai/c/${resJson.id}`;
     }
   }
 }
