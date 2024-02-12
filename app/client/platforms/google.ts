@@ -1,6 +1,11 @@
 import { Google, REQUEST_TIMEOUT_MS } from "@/app/constant";
 import { ChatOptions, getHeaders, LLMApi, LLMModel, LLMUsage } from "../api";
-import { useAccessStore, useAppConfig, useChatStore } from "@/app/store";
+import {
+  ChatMessage,
+  useAccessStore,
+  useAppConfig,
+  useChatStore,
+} from "@/app/store";
 import {
   EventStreamContentType,
   fetchEventSource,
@@ -22,9 +27,17 @@ export class GeminiProApi implements LLMApi {
   }
   async chat(options: ChatOptions): Promise<void> {
     const apiClient = this;
-    const messages = options.messages.map((v) => ({
+    const msgs = options.messages as Array<ChatMessage>;
+    let messages = msgs.map((v) => ({
       role: v.role.replace("assistant", "model").replace("system", "user"),
-      parts: [{ text: v.content }],
+      parts: [{ text: v.content } as any].concat(
+        v.images?.map((image) => ({
+          fileData: {
+            mimeType: "images/" + image.substring(image.lastIndexOf(".") + 1),
+            fileUri: image,
+          },
+        })),
+      ),
     }));
 
     // google requires that role in neighboring messages must not be the same
@@ -40,7 +53,6 @@ export class GeminiProApi implements LLMApi {
         i++;
       }
     }
-
     const modelConfig = {
       ...useAppConfig.getState().modelConfig,
       ...useChatStore.getState().currentSession().mask.modelConfig,
@@ -48,6 +60,9 @@ export class GeminiProApi implements LLMApi {
         model: options.config.model,
       },
     };
+    if (modelConfig.model === "gemini-pro-vision") {
+      messages = messages.slice(messages.length - 1, messages.length);
+    }
     const requestPayload = {
       contents: messages,
       generationConfig: {
