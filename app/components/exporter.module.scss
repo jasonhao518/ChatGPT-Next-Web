@@ -8,7 +8,10 @@
   white-space: break-spaces;
   padding: 10px !important;
 }
-
+.chat-message-image {
+  width: 100%;
+  height: auto;
+}
 .steps {
   background-color: var(--gray);
   border-radius: 10px;

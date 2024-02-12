@@ -184,8 +184,12 @@ export function useLoadData() {
   const config = useAppConfig();
 
   var api: ClientApi;
-  if (config.modelConfig.model === "gemini-pro") {
+  if (config.modelConfig.model.startsWith("gemini-pro")) {
     api = new ClientApi(ModelProvider.GeminiPro);
+  } else if (config.modelConfig.model === "stable-diffusion") {
+    api = new ClientApi(ModelProvider.StableDiffusion);
+  } else if (config.modelConfig.model === "midjourney") {
+    api = new ClientApi(ModelProvider.MidJourney);
   } else {
     api = new ClientApi(ModelProvider.GPT);
   }

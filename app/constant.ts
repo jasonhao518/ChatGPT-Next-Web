@@ -80,11 +80,23 @@ export enum ServiceProvider {
 
 export enum ModelProvider {
   GPT = "GPT",
+  MidJourney = "MidJourney",
   GeminiPro = "GeminiPro",
+  StableDiffusion = "StableDiffusion",
 }
 
 export const OpenaiPath = {
   ChatPath: "v1/chat/completions",
+  ListModelPath: "v1/models",
+};
+
+export const MidJourneyPath = {
+  ChatPath: "midjourney",
+  ListModelPath: "v1/models",
+};
+
+export const StableDiffusionPath = {
+  ChatPath: "stable-diffusion",
   ListModelPath: "v1/models",
 };
 
@@ -126,16 +138,27 @@ export const DEFAULT_MODELS = [
   {
     name: "gpt-4",
     available: true,
+    type: "chat",
     provider: {
       id: "openai",
       providerName: "OpenAI",
       providerType: "openai",
     },
   },
-
+  {
+    name: "gpt-4-vision-preview",
+    available: true,
+    type: "chat",
+    provider: {
+      id: "openai",
+      providerName: "OpenAI",
+      providerType: "openai",
+    },
+  },
   {
     name: "gpt-4-32k",
     available: true,
+    type: "chat",
     provider: {
       id: "openai",
       providerName: "OpenAI",
@@ -146,6 +169,7 @@ export const DEFAULT_MODELS = [
   {
     name: "gpt-3.5-turbo",
     available: true,
+    type: "chat",
     provider: {
       id: "openai",
       providerName: "OpenAI",
@@ -155,15 +179,7 @@ export const DEFAULT_MODELS = [
   {
     name: "gpt-3.5-turbo-16k",
     available: true,
-    provider: {
-      id: "openai",
-      providerName: "OpenAI",
-      providerType: "openai",
-    },
-  },
-  {
-    name: "dall-e-3",
-    available: true,
+    type: "chat",
     provider: {
       id: "openai",
       providerName: "OpenAI",
@@ -173,10 +189,51 @@ export const DEFAULT_MODELS = [
   {
     name: "gemini-pro",
     available: true,
+    type: "chat",
     provider: {
       id: "google",
       providerName: "Google",
       providerType: "google",
+    },
+  },
+  {
+    name: "gemini-pro-vision",
+    available: true,
+    type: "chat",
+    provider: {
+      id: "google",
+      providerName: "Google",
+      providerType: "google",
+    },
+  },
+  {
+    name: "dall-e-3",
+    available: true,
+    type: "image",
+    provider: {
+      id: "openai",
+      providerName: "OpenAI",
+      providerType: "openai",
+    },
+  },
+  {
+    name: "midjourney",
+    available: true,
+    type: "image",
+    provider: {
+      id: "midjourney",
+      providerName: "MidJourney",
+      providerType: "midjourney",
+    },
+  },
+  {
+    name: "stable-diffusion",
+    available: true,
+    type: "image",
+    provider: {
+      id: "stable-diffusion",
+      providerName: "StableDiffusion",
+      providerType: "StableDiffusion",
     },
   },
 ] as const;

@@ -307,8 +307,12 @@ export function PreviewActions(props: {
     setShouldExport(false);
 
     var api: ClientApi;
-    if (config.modelConfig.model === "gemini-pro") {
+    if (config.modelConfig.model.startsWith("gemini-pro")) {
       api = new ClientApi(ModelProvider.GeminiPro);
+    } else if (config.modelConfig.model === "stable-diffusion") {
+      api = new ClientApi(ModelProvider.StableDiffusion);
+    } else if (config.modelConfig.model === "midjourney") {
+      api = new ClientApi(ModelProvider.MidJourney);
     } else {
       api = new ClientApi(ModelProvider.GPT);
     }
@@ -584,6 +588,17 @@ export function ImagePreviewer(props: {
                   fontSize={config.fontSize}
                   defaultShow
                 />
+                {m.images?.map((image, index) => (
+                  <img
+                    key={index}
+                    crossOrigin="anonymous"
+                    className={styles["chat-message-image"]}
+                    src={image.replaceAll(
+                      "https://chatlogimg.s3.ap-northeast-1.amazonaws.com",
+                      "/img",
+                    )}
+                  />
+                ))}
               </div>
             </div>
           );

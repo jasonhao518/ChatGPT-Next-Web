@@ -28,6 +28,7 @@ import PinIcon from "../icons/pin.svg";
 import EditIcon from "../icons/rename.svg";
 import ConfirmIcon from "../icons/confirm.svg";
 import CancelIcon from "../icons/cancel.svg";
+import UploadIcon from "../icons/upload.svg";
 
 import LightIcon from "../icons/light.svg";
 import DarkIcon from "../icons/dark.svg";
@@ -35,6 +36,7 @@ import AutoIcon from "../icons/auto.svg";
 import BottomIcon from "../icons/bottom.svg";
 import StopIcon from "../icons/pause.svg";
 import RobotIcon from "../icons/robot.svg";
+import { v4 as uuidv4 } from "uuid";
 
 import {
   ChatMessage,
@@ -91,6 +93,70 @@ import { ExportMessageModal } from "./exporter";
 import { getClientConfig } from "../config/client";
 import { useAllModels } from "../utils/hooks";
 import { Folder, S3File } from "../store/folder";
+
+interface ResizedImage {
+  file: File;
+  base64: string;
+}
+
+function resizeImage(
+  file: File,
+  maxWidth: number,
+  maxHeight: number,
+): Promise<ResizedImage> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const image = new Image();
+      image.src = reader.result as string;
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        let width = image.width;
+        let height = image.height;
+
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+
+        if (height > maxHeight) {
+          width *= maxHeight / height;
+          height = maxHeight;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        if (ctx) {
+          ctx.drawImage(image, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const resizedFile = new File([blob], file.name, {
+                type: file.type,
+                lastModified: Date.now(),
+              });
+
+              const resizedImage: ResizedImage = {
+                file: resizedFile,
+                base64: reader.result as string,
+              };
+
+              resolve(resizedImage);
+            } else {
+              reject("blob not available");
+            }
+          }, file.type);
+        } else {
+          reject("ctx not available");
+        }
+      };
+    };
+    reader.onerror = (error) => reject(error);
+  });
+}
 
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
@@ -452,6 +518,7 @@ export function ChatActions(props: {
   showPromptModal: () => void;
   scrollToBottom: () => void;
   showPromptHints: () => void;
+  imageSelected: (img: any) => void;
   hitBottom: boolean;
   folder: Folder;
   display: boolean;
@@ -473,6 +540,73 @@ export function ChatActions(props: {
   // stop all responses
   const couldStop = ChatControllerPool.hasPending();
   const stopAll = () => ChatControllerPool.stopAll();
+
+  function selectImage() {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".png,.jpg,.webp,.jpeg";
+    const fileReader = new FileReader();
+    fileInput.onchange = async (event: any) => {
+      const file = event.target.files[0];
+      const resizedImage = await resizeImage(file, 2048, 2048);
+      // Upload the resized image file or use the resized image data URL
+      console.log(resizedImage);
+      const size = resizedImage.file.size;
+      fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-transaction-id": uuidv4(),
+        },
+        body: JSON.stringify({
+          size,
+          fileId: uuidv4(),
+          filename: file?.name,
+          contentType: file?.type,
+        }),
+      }).then(async (response) => {
+        if (response.ok) {
+          const { url, fields } = await response.json();
+
+          const formData = new FormData();
+          let fileUrl: string | null = null;
+          Object.entries(fields).forEach(([key, value]) => {
+            formData.append(key, value as string);
+            if ("key" === key) {
+              fileUrl = url + value;
+            }
+          });
+          formData.append("file", resizedImage.file!);
+
+          fetch(url, {
+            method: "POST",
+            body: formData,
+          }).then((res) => {
+            if (res.status === 204) {
+              props.imageSelected({
+                filename: file.name,
+                url: fileUrl,
+                base64: resizedImage.base64,
+              });
+            } else {
+              alert("upload failed");
+              return null;
+            }
+          });
+        } else {
+          const { error } = await response.json();
+          if ("NO_QUOTA" === error) {
+            // TODO use localise error message
+            showToast(error);
+          } else {
+            showToast(error);
+          }
+        }
+      });
+    };
+
+    fileInput.click();
+  }
 
   // switch model
   const currentModel = chatStore.currentSession().mask.modelConfig.model;
@@ -575,6 +709,16 @@ export function ChatActions(props: {
           icon={<RobotIcon />}
         />
       )}
+      {props.display &&
+        (currentModel === "gemini-pro-vision" ||
+          currentModel === "gpt-4-vision-preview" ||
+          currentModel === "midjourney") && (
+          <ChatAction
+            onClick={selectImage}
+            text="选择图片"
+            icon={<UploadIcon />}
+          />
+        )}
       {props.display && showModelSelector && (
         <Selector
           defaultSelectedValue={currentModel}
@@ -707,6 +851,8 @@ function _Chat() {
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [userInput, setUserInput] = useState("");
+  const [useImages, setUseImages] = useState<any[]>([]);
+  const [mjImageMode, setMjImageMode] = useState<string>("IMAGINE");
   const [isLoading, setIsLoading] = useState(false);
   const { submitKey, shouldSubmit } = useSubmitHandler();
   const { scrollRef, setAutoScroll, scrollDomToBottom } = useScrollToBottom();
@@ -781,7 +927,7 @@ function _Chat() {
   };
 
   const doSubmit = (userInput: string) => {
-    if (userInput.trim() === "") return;
+    if (userInput.trim() === "" && useImages.length === 0) return;
     const matchCommand = chatCommands.match(userInput);
     if (matchCommand.matched) {
       setUserInput("");
@@ -790,7 +936,12 @@ function _Chat() {
       return;
     }
     setIsLoading(true);
-    chatStore.onUserInput(userInput).then(() => setIsLoading(false));
+    chatStore
+      .onUserInput(
+        userInput,
+        useImages.map((item) => item.url),
+      )
+      .then(() => setIsLoading(false));
     localStorage.setItem(LAST_INPUT_KEY, userInput);
     setUserInput("");
     setPromptHints([]);
@@ -910,10 +1061,17 @@ function _Chat() {
     if (message.role === "assistant") {
       // if it is resending a bot's message, find the user input for it
       botMessage = message;
-      for (let i = resendingIndex; i >= 0; i -= 1) {
-        if (session.messages[i].role === "user") {
-          userMessage = session.messages[i];
-          break;
+      if (message.status) {
+        // refresh message status
+        chatStore.refreshMessage(message, resendingIndex);
+        return;
+      } else {
+        // original logic here
+        for (let i = resendingIndex; i >= 0; i -= 1) {
+          if (session.messages[i].role === "user") {
+            userMessage = session.messages[i];
+            break;
+          }
         }
       }
     } else if (message.role === "user") {
@@ -1342,17 +1500,76 @@ function _Chat() {
                         tooltipText={ref.quote}
                       />
                     ))}
-                    {message.image && (
-                      <img
-                        className={styles["chat-message-image"]}
-                        src={message.image}
-                      />
-                    )}
+                    {message.images?.map((image, index) => (
+                      <>
+                        <img
+                          key={index}
+                          className={styles["chat-message-image"]}
+                          src={image}
+                        />
+                        {message.model === "midjourney" && (
+                          <>
+                            <div className={styles["button-line"]}>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " U1")}
+                              >
+                                U1
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " U2")}
+                              >
+                                U2
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " U3")}
+                              >
+                                U3
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " U4")}
+                              >
+                                U4
+                              </button>
+                            </div>
+                            <div className={styles["button-line"]}>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " V1")}
+                              >
+                                V1
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " V2")}
+                              >
+                                V2
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " V3")}
+                              >
+                                V3
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " V4")}
+                              >
+                                V4
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </>
+                    ))}
                   </div>
                   <div className={styles["chat-message-action-date"]}>
                     {isContext
                       ? Locale.Chat.IsContext
-                      : message.date.toLocaleString()}
+                      : message.date.toLocaleString() + `(${message.model})`}
                   </div>
                 </div>
               </div>
@@ -1380,12 +1597,38 @@ function _Chat() {
             setUserInput("/");
             onSearch("");
           }}
+          imageSelected={(img: any) => {
+            if (useImages.length >= 5) {
+              alert(Locale.Midjourney.SelectImgMax(5));
+              return;
+            }
+            setUseImages([...useImages, img]);
+          }}
         />
+        {useImages.length > 0 && (
+          <div className={styles["chat-select-images"]}>
+            {useImages.map((img: any, i) => (
+              <img
+                src={img.base64}
+                key={i}
+                onClick={() => {
+                  setUseImages(useImages.filter((_, ii) => ii != i));
+                }}
+                title={img.filename}
+                alt={img.filename}
+              />
+            ))}
+          </div>
+        )}
         <div className={styles["chat-input-panel-inner"]}>
           <textarea
             ref={inputRef}
             className={styles["chat-input"]}
-            placeholder={Locale.Chat.Input(submitKey)}
+            placeholder={
+              useImages.length > 0 && mjImageMode != "IMAGINE"
+                ? Locale.Midjourney.InputDisabled
+                : Locale.Chat.Input(submitKey)
+            }
             onInput={(e) => onInput(e.currentTarget.value)}
             value={userInput}
             onKeyDown={onInputKeyDown}
@@ -1396,6 +1639,7 @@ function _Chat() {
             style={{
               fontSize: config.fontSize,
             }}
+            disabled={useImages.length > 0 && mjImageMode != "IMAGINE"}
           />
           <IconButton
             icon={<SendWhiteIcon />}

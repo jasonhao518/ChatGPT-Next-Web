@@ -2,9 +2,11 @@ import {
   ApiPath,
   DEFAULT_API_HOST,
   DEFAULT_MODELS,
+  MidJourneyPath,
   OpenaiPath,
   REQUEST_TIMEOUT_MS,
   ServiceProvider,
+  StableDiffusionPath,
 } from "@/app/constant";
 import {
   ChatMessage,
@@ -32,7 +34,7 @@ export interface OpenAIListModelResponse {
   }>;
 }
 
-export class ChatGPTApi implements LLMApi {
+export class StableDiffusionApi implements LLMApi {
   private disableListModels = true;
 
   path(path: string): string {
@@ -71,7 +73,11 @@ export class ChatGPTApi implements LLMApi {
   }
 
   async chat(options: ChatOptions) {
-    const msgs = options.messages as Array<ChatMessage>;
+    const messages = options.messages.map((v) => ({
+      role: v.role,
+      content: v.content,
+    }));
+
     const modelConfig = {
       ...useAppConfig.getState().modelConfig,
       ...useChatStore.getState().currentSession().mask.modelConfig,
@@ -79,21 +85,6 @@ export class ChatGPTApi implements LLMApi {
         model: options.config.model,
       },
     };
-    const messages = msgs.map((v) => ({
-      role: v.role,
-      content:
-        v.images && "gpt-4-vision-preview" === modelConfig.model
-          ? v.images
-              .map((img) => ({
-                type: "image_url",
-                image_url: {
-                  url: img,
-                },
-              }))
-              .concat({ type: "text", text: v.content } as any)
-          : [{ type: "text", text: v.content }],
-    }));
-
     const message = options.messages[0] as ChatMessage;
     const requestPayload = {
       messages,
@@ -118,7 +109,7 @@ export class ChatGPTApi implements LLMApi {
       if (options.refresh) {
         headers["X-ID"] = message.id;
       }
-      const chatPath = this.path(OpenaiPath.ChatPath);
+      const chatPath = this.path(StableDiffusionPath.ChatPath);
       const chatPayload = {
         options: { timeout: 80000 },
         method: "POST",

@@ -27,8 +27,9 @@ export type Reference = {
 export type ChatMessage = RequestMessage & {
   date: string;
   references?: Array<Reference>;
+  status?: string;
   streaming?: boolean;
-  image?: string;
+  images?: string[];
   isError?: boolean;
   id: string;
   model?: ModelType;
@@ -90,7 +91,7 @@ function createEmptySession(): ChatSession {
 
 function getSummarizeModel(currentModel: string) {
   // if it is using gpt-* models, force to use 3.5 to summarize
-  return currentModel.startsWith("gpt") ? SUMMARIZE_MODEL : currentModel;
+  return SUMMARIZE_MODEL;
 }
 
 function countMessages(msgs: ChatMessage[]) {
@@ -309,7 +310,7 @@ export const useChatStore = createPersistStore(
         get().summarizeSession();
       },
 
-      async onUserInput(content: string) {
+      async onUserInput(content: string, images?: string[]) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
@@ -319,6 +320,7 @@ export const useChatStore = createPersistStore(
         const userMessage: ChatMessage = createMessage({
           role: "user",
           content: userContent,
+          images: images,
         });
 
         const botMessage: ChatMessage = createMessage({
@@ -343,10 +345,14 @@ export const useChatStore = createPersistStore(
             botMessage,
           ]);
         });
-
+        console.log(modelConfig.model);
         var api: ClientApi;
-        if (modelConfig.model === "gemini-pro") {
+        if (modelConfig.model.startsWith("gemini-pro")) {
           api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (modelConfig.model === "stable-diffusion") {
+          api = new ClientApi(ModelProvider.StableDiffusion);
+        } else if (modelConfig.model === "midjourney") {
+          api = new ClientApi(ModelProvider.MidJourney);
         } else {
           api = new ClientApi(ModelProvider.GPT);
         }
@@ -375,13 +381,18 @@ export const useChatStore = createPersistStore(
                   trimedMessage.length - 3,
                 );
                 const json = JSON.parse(content) as any;
+                // when submitting request, check the status
+                if (json?.status) {
+                  botMessage.status = json.status;
+                  botMessage.id = json.id;
+                  botMessage.content = `${json.status}, please click refresh button to update`;
+                }
                 if (json?.answer) {
-                  console.log(json);
                   botMessage.content = json?.answer;
                   botMessage.references = json?.references;
                 } else if (json?.image) {
                   botMessage.content = json?.prompt;
-                  botMessage.image = json?.image;
+                  botMessage.images = [json?.image];
                 }
               } else {
                 botMessage.content = message;
@@ -523,6 +534,93 @@ export const useChatStore = createPersistStore(
         return recentMessages;
       },
 
+      refreshMessage(msg: ChatMessage, messageIndex: number) {
+        const session = get().currentSession();
+        const modelConfig = session.mask.modelConfig;
+        var api: ClientApi;
+        if (modelConfig.model === "gemini-pro") {
+          api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (modelConfig.model === "stable-diffusion") {
+          api = new ClientApi(ModelProvider.StableDiffusion);
+        } else if (modelConfig.model === "midjourney") {
+          api = new ClientApi(ModelProvider.MidJourney);
+        } else {
+          api = new ClientApi(ModelProvider.GPT);
+        }
+
+        // make request
+        api.llm.chat({
+          messages: [msg],
+          refresh: true,
+          config: { ...modelConfig, stream: true },
+          onUpdate(message) {
+            msg.streaming = true;
+            if (message) {
+              msg.content = message;
+            }
+            get().updateCurrentSession((session) => {
+              session.messages = session.messages.concat();
+            });
+          },
+          onFinish(message) {
+            msg.streaming = false;
+            if (message) {
+              // handle references
+              const trimedMessage = message.trim();
+              if (trimedMessage.startsWith("```json")) {
+                const content = trimedMessage.substring(
+                  7,
+                  trimedMessage.length - 3,
+                );
+                const json = JSON.parse(content) as any;
+                // when submitting request, check the status
+                if (json?.status) {
+                  msg.status = json.status;
+                  msg.id = json.id;
+                  msg.content = `${json.status}, ${Locale.Refresh}`;
+                }
+                if (json?.answer) {
+                  msg.content = json?.answer;
+                  msg.references = json?.references;
+                } else if (json?.image) {
+                  msg.content = json?.prompt;
+                  msg.images = [json?.image];
+                }
+              } else {
+                msg.content = message;
+              }
+              get().onNewMessage(msg);
+            }
+            ChatControllerPool.remove(session.id, msg.id);
+          },
+          onError(error) {
+            const isAborted = error.message.includes("aborted");
+            msg.content +=
+              "\n\n" +
+              prettyObject({
+                error: true,
+                message: error.message,
+              });
+            msg.streaming = false;
+            msg.isError = !isAborted;
+            get().updateCurrentSession((session) => {
+              session.messages = session.messages.concat();
+            });
+            ChatControllerPool.remove(session.id, msg.id ?? messageIndex);
+
+            console.error("[Chat] failed ", error);
+          },
+          onController(controller) {
+            // collect controller for stop/retry
+            ChatControllerPool.addController(
+              session.id,
+              msg.id ?? messageIndex,
+              controller,
+            );
+          },
+        });
+      },
+
       updateMessage(
         sessionIndex: number,
         messageIndex: number,
@@ -543,6 +641,7 @@ export const useChatStore = createPersistStore(
       },
 
       summarizeSession() {
+        return;
         const config = useAppConfig.getState();
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
@@ -550,6 +649,10 @@ export const useChatStore = createPersistStore(
         var api: ClientApi;
         if (modelConfig.model === "gemini-pro") {
           api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (modelConfig.model === "stable-diffusion") {
+          api = new ClientApi(ModelProvider.StableDiffusion);
+        } else if (config.modelConfig.model === "midjourney") {
+          api = new ClientApi(ModelProvider.MidJourney);
         } else {
           api = new ClientApi(ModelProvider.GPT);
         }

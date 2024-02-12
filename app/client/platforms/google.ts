@@ -1,6 +1,11 @@
 import { Google, REQUEST_TIMEOUT_MS } from "@/app/constant";
 import { ChatOptions, getHeaders, LLMApi, LLMModel, LLMUsage } from "../api";
-import { useAccessStore, useAppConfig, useChatStore } from "@/app/store";
+import {
+  ChatMessage,
+  useAccessStore,
+  useAppConfig,
+  useChatStore,
+} from "@/app/store";
 import {
   EventStreamContentType,
   fetchEventSource,
@@ -10,6 +15,27 @@ import { getClientConfig } from "@/app/config/client";
 import Locale from "../../locales";
 import { getServerSideConfig } from "@/app/config/server";
 import de from "@/app/locales/de";
+function getMIME(extension: string) {
+  if ("png" === extension) {
+    return "image/png";
+  } else if ("jpg" === extension) {
+    return "image/jpeg";
+  } else if ("webp" === extension) {
+    return "image/webp";
+  } else if ("heic" === extension) {
+    return "image/heic";
+  } else if ("heif" === extension) {
+    return "image/heif";
+  }
+  return "";
+}
+async function toBase64ImageUrl(imgUrl: string): Promise<string> {
+  const fetchImageUrl = await fetch(imgUrl);
+  const responseArrBuffer = await fetchImageUrl.arrayBuffer();
+  const toBase64 = Buffer.from(responseArrBuffer).toString("base64");
+  return toBase64;
+}
+
 export class GeminiProApi implements LLMApi {
   extractMessage(res: any) {
     console.log("[Response] gemini-pro response: ", res);
@@ -22,11 +48,38 @@ export class GeminiProApi implements LLMApi {
   }
   async chat(options: ChatOptions): Promise<void> {
     const apiClient = this;
-    const messages = options.messages.map((v) => ({
-      role: v.role.replace("assistant", "model").replace("system", "user"),
-      parts: [{ text: v.content }],
-    }));
-
+    const modelConfig = {
+      ...useAppConfig.getState().modelConfig,
+      ...useChatStore.getState().currentSession().mask.modelConfig,
+      ...{
+        model: options.config.model,
+      },
+    };
+    let msgs = options.messages as Array<ChatMessage>;
+    if (modelConfig.model === "gemini-pro-vision") {
+      msgs = msgs.slice(msgs.length - 1, msgs.length);
+    }
+    let messages: any = [];
+    for (let i = 0; i < msgs.length; i++) {
+      const v = msgs[i];
+      let parts: any = [{ text: v.content }];
+      if (v.images) {
+        for (let j = 0; j < v.images.length; j++) {
+          const image = v.images[j];
+          const base64 = await toBase64ImageUrl(image);
+          parts.push({
+            inlineData: {
+              mimeType: getMIME(image.substring(image.lastIndexOf(".") + 1)),
+              data: base64,
+            },
+          });
+        }
+      }
+      messages.push({
+        role: v.role.replace("assistant", "model").replace("system", "user"),
+        parts: parts,
+      });
+    }
     // google requires that role in neighboring messages must not be the same
     for (let i = 0; i < messages.length - 1; ) {
       // Check if current and next item both have the role "model"
@@ -41,13 +94,6 @@ export class GeminiProApi implements LLMApi {
       }
     }
 
-    const modelConfig = {
-      ...useAppConfig.getState().modelConfig,
-      ...useChatStore.getState().currentSession().mask.modelConfig,
-      ...{
-        model: options.config.model,
-      },
-    };
     const requestPayload = {
       contents: messages,
       generationConfig: {

@@ -9,6 +9,9 @@ import {
 import { ChatMessage, ModelType, useAccessStore, useChatStore } from "../store";
 import { ChatGPTApi } from "./platforms/openai";
 import { GeminiProApi } from "./platforms/google";
+import { MidJourneyApi } from "./platforms/midjourney";
+import { StableDiffusionApi } from "./platforms/stablediffusion";
+
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -32,7 +35,7 @@ export interface LLMConfig {
 export interface ChatOptions {
   messages: RequestMessage[];
   config: LLMConfig;
-
+  refresh?: boolean;
   onUpdate?: (message: string, chunk: string) => void;
   onFinish: (message: string) => void;
   onError?: (err: Error) => void;
@@ -62,7 +65,7 @@ export abstract class LLMApi {
   abstract models(): Promise<LLMModel[]>;
 }
 
-type ProviderName = "openai" | "azure" | "claude" | "palm";
+type ProviderName = "openai" | "azure" | "claude" | "palm" | "midjourney";
 
 interface Model {
   name: string;
@@ -89,6 +92,12 @@ export class ClientApi {
   constructor(provider: ModelProvider = ModelProvider.GPT) {
     if (provider === ModelProvider.GeminiPro) {
       this.llm = new GeminiProApi();
+      return;
+    } else if (provider === ModelProvider.MidJourney) {
+      this.llm = new MidJourneyApi();
+      return;
+    } else if (provider === ModelProvider.StableDiffusion) {
+      this.llm = new StableDiffusionApi();
       return;
     }
     this.llm = new ChatGPTApi();
@@ -151,7 +160,7 @@ export function getHeaders() {
   const modelConfig = useChatStore.getState().currentSession().mask.modelConfig;
   const folder = useChatStore.getState().currentSession().folder;
 
-  const isGoogle = modelConfig.model === "gemini-pro";
+  const isGoogle = modelConfig.model.startsWith("gemini-pro");
   const isAzure = accessStore.provider === ServiceProvider.Azure;
   const authHeader = isAzure ? "api-key" : "Authorization";
   const apiKey = isGoogle

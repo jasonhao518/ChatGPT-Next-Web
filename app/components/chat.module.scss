@@ -54,6 +54,14 @@
   }
 }
 
+.chat-select-images{
+  img{
+    width: 100px;
+    height: 100px;
+    margin: 3px;
+  }
+}
+
 .prompt-toast {
   position: absolute;
   bottom: -50px;
@@ -397,6 +405,29 @@
 .chat-message-image {
   width: 100%;
   height: auto;
+}
+.button-line {
+  display: block;
+  clear: both;
+  margin-bottom: 10px;
+}
+
+.my-button {
+  margin-right: 5px;
+  padding: 10px;
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+}
+
+.my-button:hover {
+  background-color: #45a049;
 }
 .chat-message-action-tag-container {
   display: flex; /* Flexbox layout for inline arrangement of tags */

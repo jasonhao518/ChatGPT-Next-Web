@@ -70,6 +70,14 @@ if (mode !== "export") {
         destination: "https://api.openai.com/:path*",
       },
       {
+        source: "/cdn/discordapp/:path*",
+        destination: "https://cdn.discordapp.com/:path*",
+      },
+      {
+        source: "/img/:path*",
+        destination: "https://chatlogimg.s3.ap-northeast-1.amazonaws.com/:path*",
+      },
+      {
         source: "/google-fonts/:path*",
         destination: "https://fonts.googleapis.com/:path*",
       },
@@ -78,6 +86,15 @@ if (mode !== "export") {
         destination: "https://sharegpt.com/api/conversations",
       },
     ];
+
+    const apiUrl = process.env.API_URL;
+    if (apiUrl) {
+      console.log("[Next] using api url ", apiUrl);
+      ret.push({
+        source: "/api/:path*",
+        destination: `${apiUrl}/:path*`,
+      });
+    }
 
     return {
       beforeFiles: ret,
