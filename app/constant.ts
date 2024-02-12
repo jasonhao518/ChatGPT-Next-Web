@@ -178,16 +178,6 @@ export const DEFAULT_MODELS = [
     },
   },
   {
-    name: "dall-e-3",
-    available: true,
-    type: "image",
-    provider: {
-      id: "openai",
-      providerName: "OpenAI",
-      providerType: "openai",
-    },
-  },
-  {
     name: "gemini-pro",
     available: true,
     type: "chat",
@@ -195,6 +185,26 @@ export const DEFAULT_MODELS = [
       id: "google",
       providerName: "Google",
       providerType: "google",
+    },
+  },
+  {
+    name: "gemini-pro-vision",
+    available: true,
+    type: "chat",
+    provider: {
+      id: "google",
+      providerName: "Google",
+      providerType: "google",
+    },
+  },
+  {
+    name: "dall-e-3",
+    available: true,
+    type: "image",
+    provider: {
+      id: "openai",
+      providerName: "OpenAI",
+      providerType: "openai",
     },
   },
   {
