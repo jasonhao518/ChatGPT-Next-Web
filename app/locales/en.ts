@@ -6,6 +6,7 @@ import { LocaleType } from "./index";
 
 const isApp = !!getClientConfig()?.isApp;
 const en: LocaleType = {
+  Refresh: "please click retry button above this message to update status",
   WIP: "Coming Soon...",
   Error: {
     Unauthorized: isApp

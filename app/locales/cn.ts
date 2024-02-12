@@ -4,6 +4,7 @@ import { SubmitKey } from "../store/config";
 const isApp = !!getClientConfig()?.isApp;
 
 const cn = {
+  Refresh: "点击消息上方重试按钮刷新状态",
   WIP: "该功能仍在开发中……",
   Error: {
     Unauthorized: isApp

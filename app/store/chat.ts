@@ -577,7 +577,7 @@ export const useChatStore = createPersistStore(
                 if (json?.status) {
                   msg.status = json.status;
                   msg.id = json.id;
-                  msg.content = `${json.status}, please click refresh button to update`;
+                  msg.content = `${json.status}, ${Locale.Refresh}`;
                 }
                 if (json?.answer) {
                   msg.content = json?.answer;
