@@ -56,6 +56,9 @@ export class GeminiProApi implements LLMApi {
       },
     };
     let msgs = options.messages as Array<ChatMessage>;
+    if (modelConfig.model === "gemini-pro-vision") {
+      msgs = msgs.slice(msgs.length - 1, msgs.length);
+    }
     let messages: any = [];
     for (let i = 0; i < msgs.length; i++) {
       const v = msgs[i];
