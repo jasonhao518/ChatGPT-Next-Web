@@ -709,13 +709,16 @@ export function ChatActions(props: {
           icon={<RobotIcon />}
         />
       )}
-      {props.display && (
-        <ChatAction
-          onClick={selectImage}
-          text="选择图片"
-          icon={<UploadIcon />}
-        />
-      )}
+      {props.display &&
+        (currentModel === "gemini-pro-vision" ||
+          currentModel === "gpt-4-vision-preview" ||
+          currentModel === "midjourney") && (
+          <ChatAction
+            onClick={selectImage}
+            text="选择图片"
+            icon={<UploadIcon />}
+          />
+        )}
       {props.display && showModelSelector && (
         <Selector
           defaultSelectedValue={currentModel}
@@ -1498,11 +1501,69 @@ function _Chat() {
                       />
                     ))}
                     {message.images?.map((image, index) => (
-                      <img
-                        key={index}
-                        className={styles["chat-message-image"]}
-                        src={image}
-                      />
+                      <>
+                        <img
+                          key={index}
+                          className={styles["chat-message-image"]}
+                          src={image}
+                        />
+                        {message.model === "midjourney" && (
+                          <>
+                            <div className={styles["button-line"]}>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " U1")}
+                              >
+                                U1
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " U2")}
+                              >
+                                U2
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " U3")}
+                              >
+                                U3
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " U4")}
+                              >
+                                U4
+                              </button>
+                            </div>
+                            <div className={styles["button-line"]}>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " V1")}
+                              >
+                                V1
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " V2")}
+                              >
+                                V2
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " V3")}
+                              >
+                                V3
+                              </button>
+                              <button
+                                className={styles["my-button"]}
+                                onClick={() => onInput(message.id + " V4")}
+                              >
+                                V4
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </>
                     ))}
                   </div>
                   <div className={styles["chat-message-action-date"]}>
