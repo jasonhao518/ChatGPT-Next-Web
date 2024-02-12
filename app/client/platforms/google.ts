@@ -43,21 +43,27 @@ export class GeminiProApi implements LLMApi {
       },
     };
     let msgs = options.messages as Array<ChatMessage>;
-    if (modelConfig.model === "gemini-pro-vision") {
-      msgs = msgs.slice(msgs.length - 1, msgs.length);
+    let messages: any = [];
+    for (let i = 0; i < msgs.length; i++) {
+      const v = msgs[i];
+      let parts: any = [{ text: v.content }];
+      if (v.images) {
+        for (let j = 0; j < v.images.length; j++) {
+          const image = v.images[j];
+          const base64 = await toBase64ImageUrl(image);
+          parts.push({
+            inlineData: {
+              mimeType: "image/" + image.substring(image.lastIndexOf(".") + 1),
+              data: base64,
+            },
+          });
+        }
+      }
+      messages.push({
+        role: v.role.replace("assistant", "model").replace("system", "user"),
+        parts: parts,
+      });
     }
-    const messages = msgs.map((v) => ({
-      role: v.role.replace("assistant", "model").replace("system", "user"),
-      parts: [{ text: v.content } as any].concat(
-        v.images?.map(async (image) => ({
-          inlineData: {
-            mimeType: "image/" + image.substring(image.lastIndexOf(".") + 1),
-            data: await toBase64ImageUrl(image),
-          },
-        })),
-      ),
-    }));
-
     // google requires that role in neighboring messages must not be the same
     for (let i = 0; i < messages.length - 1; ) {
       // Check if current and next item both have the role "model"
