@@ -37,7 +37,7 @@ export class GeminiProApi implements LLMApi {
               image.indexOf(":") + 1,
               image.indexOf(";"),
             ),
-            data: image,
+            data: image.substring(image.indexOf(",") + 1),
           },
         })),
       ),
