@@ -145,7 +145,16 @@ export const DEFAULT_MODELS = [
       providerType: "openai",
     },
   },
-
+  {
+    name: "gpt-4-vision-preview",
+    available: true,
+    type: "chat",
+    provider: {
+      id: "openai",
+      providerName: "OpenAI",
+      providerType: "openai",
+    },
+  },
   {
     name: "gpt-4-32k",
     available: true,
