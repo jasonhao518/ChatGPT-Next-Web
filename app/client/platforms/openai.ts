@@ -72,20 +72,6 @@ export class ChatGPTApi implements LLMApi {
 
   async chat(options: ChatOptions) {
     const msgs = options.messages as Array<ChatMessage>;
-    const messages = msgs.map((v) => ({
-      role: v.role,
-      content: v.images
-        ? v.images
-            .map((img) => ({
-              type: "image_url",
-              image_url: {
-                url: img,
-              },
-            }))
-            .concat({ type: "text", text: v.content } as any)
-        : [{ type: "text", text: v.content }],
-    }));
-
     const modelConfig = {
       ...useAppConfig.getState().modelConfig,
       ...useChatStore.getState().currentSession().mask.modelConfig,
@@ -93,6 +79,21 @@ export class ChatGPTApi implements LLMApi {
         model: options.config.model,
       },
     };
+    const messages = msgs.map((v) => ({
+      role: v.role,
+      content:
+        v.images && "gpt-4-vision-preview" === modelConfig.model
+          ? v.images
+              .map((img) => ({
+                type: "image_url",
+                image_url: {
+                  url: img,
+                },
+              }))
+              .concat({ type: "text", text: v.content } as any)
+          : [{ type: "text", text: v.content }],
+    }));
+
     const message = options.messages[0] as ChatMessage;
     const requestPayload = {
       messages,
