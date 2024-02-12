@@ -520,6 +520,7 @@ export function ChatActions(props: {
   showPromptHints: () => void;
   imageSelected: (img: any) => void;
   hitBottom: boolean;
+  model: string;
   folder: Folder;
   display: boolean;
 }) {
@@ -541,7 +542,7 @@ export function ChatActions(props: {
   const couldStop = ChatControllerPool.hasPending();
   const stopAll = () => ChatControllerPool.stopAll();
 
-  function selectImage(skipUpload: boolean) {
+  function selectImage() {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = ".png,.jpg,.webp,.jpeg";
@@ -551,7 +552,7 @@ export function ChatActions(props: {
       const resizedImage = await resizeImage(file, 2048, 2048);
       // Upload the resized image file or use the resized image data URL
       console.log(resizedImage);
-      if (skipUpload) {
+      if (currentModel === "gemini-pro-vision") {
         props.imageSelected({
           filename: file.name,
           url: resizedImage.base64,
@@ -719,7 +720,7 @@ export function ChatActions(props: {
       )}
       {props.display && (
         <ChatAction
-          onClick={selectImage(currentModel === "gemini-pro-vision")}
+          onClick={selectImage}
           text="选择图片"
           icon={<UploadIcon />}
         />
@@ -1530,6 +1531,7 @@ function _Chat() {
         <ChatActions
           display={session?.folder?.id === ""}
           folder={session?.folder}
+          model={config.modelConfig.model}
           showPromptModal={() => setShowPromptModal(true)}
           scrollToBottom={scrollToBottom}
           hitBottom={hitBottom}
