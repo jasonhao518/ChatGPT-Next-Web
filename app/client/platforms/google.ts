@@ -35,8 +35,18 @@ export class GeminiProApi implements LLMApi {
   }
   async chat(options: ChatOptions): Promise<void> {
     const apiClient = this;
-    const msgs = options.messages as Array<ChatMessage>;
-    let messages = msgs.map((v) => ({
+    const modelConfig = {
+      ...useAppConfig.getState().modelConfig,
+      ...useChatStore.getState().currentSession().mask.modelConfig,
+      ...{
+        model: options.config.model,
+      },
+    };
+    let msgs = options.messages as Array<ChatMessage>;
+    if (modelConfig.model === "gemini-pro-vision") {
+      msgs = msgs.slice(msgs.length - 1, msgs.length);
+    }
+    const messages = msgs.map((v) => ({
       role: v.role.replace("assistant", "model").replace("system", "user"),
       parts: [{ text: v.content } as any].concat(
         v.images?.map(async (image) => ({
@@ -61,16 +71,7 @@ export class GeminiProApi implements LLMApi {
         i++;
       }
     }
-    const modelConfig = {
-      ...useAppConfig.getState().modelConfig,
-      ...useChatStore.getState().currentSession().mask.modelConfig,
-      ...{
-        model: options.config.model,
-      },
-    };
-    if (modelConfig.model === "gemini-pro-vision") {
-      messages = messages.slice(messages.length - 1, messages.length);
-    }
+
     const requestPayload = {
       contents: messages,
       generationConfig: {
