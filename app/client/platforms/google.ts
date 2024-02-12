@@ -15,6 +15,14 @@ import { getClientConfig } from "@/app/config/client";
 import Locale from "../../locales";
 import { getServerSideConfig } from "@/app/config/server";
 import de from "@/app/locales/de";
+
+async function toBase64ImageUrl(imgUrl: string): Promise<string> {
+  const fetchImageUrl = await fetch(imgUrl);
+  const responseArrBuffer = await fetchImageUrl.arrayBuffer();
+  const toBase64 = Buffer.from(responseArrBuffer).toString("base64");
+  return toBase64;
+}
+
 export class GeminiProApi implements LLMApi {
   extractMessage(res: any) {
     console.log("[Response] gemini-pro response: ", res);
@@ -33,11 +41,8 @@ export class GeminiProApi implements LLMApi {
       parts: [{ text: v.content } as any].concat(
         v.images?.map((image) => ({
           inlineData: {
-            mimeType: image.substring(
-              image.indexOf(":") + 1,
-              image.indexOf(";"),
-            ),
-            data: image.substring(image.indexOf(",") + 1),
+            mimeType: image.substring(image.lastIndexOf(".") + 1),
+            data: toBase64ImageUrl(image),
           },
         })),
       ),
