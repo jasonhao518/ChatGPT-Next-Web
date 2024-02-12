@@ -33,7 +33,10 @@ export class GeminiProApi implements LLMApi {
       parts: [{ text: v.content } as any].concat(
         v.images?.map((image) => ({
           inlineData: {
-            mimeType: "image/" + image.substring(image.lastIndexOf(".") + 1),
+            mimeType: image.substring(
+              image.indexOf(":") + 1,
+              image.indexOf(";"),
+            ),
             data: image,
           },
         })),
