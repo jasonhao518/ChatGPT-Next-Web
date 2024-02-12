@@ -347,7 +347,7 @@ export const useChatStore = createPersistStore(
         });
         console.log(modelConfig.model);
         var api: ClientApi;
-        if (modelConfig.model === "gemini-pro") {
+        if (modelConfig.model.startsWith("gemini-pro")) {
           api = new ClientApi(ModelProvider.GeminiPro);
         } else if (modelConfig.model === "stable-diffusion") {
           api = new ClientApi(ModelProvider.StableDiffusion);

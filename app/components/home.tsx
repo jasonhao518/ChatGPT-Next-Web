@@ -184,7 +184,7 @@ export function useLoadData() {
   const config = useAppConfig();
 
   var api: ClientApi;
-  if (config.modelConfig.model === "gemini-pro") {
+  if (config.modelConfig.model.startsWith("gemini-pro")) {
     api = new ClientApi(ModelProvider.GeminiPro);
   } else if (config.modelConfig.model === "stable-diffusion") {
     api = new ClientApi(ModelProvider.StableDiffusion);
