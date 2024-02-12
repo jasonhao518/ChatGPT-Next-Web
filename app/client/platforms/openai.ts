@@ -82,8 +82,8 @@ export class ChatGPTApi implements LLMApi {
                 url: img,
               },
             }))
-            .concat({ text: v.content } as any)
-        : v.content,
+            .concat({ type: "text", text: v.content } as any)
+        : [{ type: "text", text: v.content }],
     }));
 
     const modelConfig = {
