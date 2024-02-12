@@ -32,9 +32,9 @@ export class GeminiProApi implements LLMApi {
       role: v.role.replace("assistant", "model").replace("system", "user"),
       parts: [{ text: v.content } as any].concat(
         v.images?.map((image) => ({
-          fileData: {
+          inlineData: {
             mimeType: "image/" + image.substring(image.lastIndexOf(".") + 1),
-            fileUri: image,
+            data: image,
           },
         })),
       ),

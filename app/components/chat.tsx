@@ -541,7 +541,7 @@ export function ChatActions(props: {
   const couldStop = ChatControllerPool.hasPending();
   const stopAll = () => ChatControllerPool.stopAll();
 
-  function selectImage() {
+  function selectImage(skipUpload: boolean) {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = ".png,.jpg,.webp,.jpeg";
@@ -551,58 +551,66 @@ export function ChatActions(props: {
       const resizedImage = await resizeImage(file, 2048, 2048);
       // Upload the resized image file or use the resized image data URL
       console.log(resizedImage);
-      const size = resizedImage.file.size;
-      fetch("/api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-transaction-id": uuidv4(),
-        },
-        body: JSON.stringify({
-          size,
-          fileId: uuidv4(),
-          filename: file?.name,
-          contentType: file?.type,
-        }),
-      }).then(async (response) => {
-        if (response.ok) {
-          const { url, fields } = await response.json();
+      if (skipUpload) {
+        props.imageSelected({
+          filename: file.name,
+          url: resizedImage.base64,
+          base64: resizedImage.base64,
+        });
+      } else {
+        const size = resizedImage.file.size;
+        fetch("/api/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-transaction-id": uuidv4(),
+          },
+          body: JSON.stringify({
+            size,
+            fileId: uuidv4(),
+            filename: file?.name,
+            contentType: file?.type,
+          }),
+        }).then(async (response) => {
+          if (response.ok) {
+            const { url, fields } = await response.json();
 
-          const formData = new FormData();
-          let fileUrl: string | null = null;
-          Object.entries(fields).forEach(([key, value]) => {
-            formData.append(key, value as string);
-            if ("key" === key) {
-              fileUrl = url + value;
-            }
-          });
-          formData.append("file", resizedImage.file!);
+            const formData = new FormData();
+            let fileUrl: string | null = null;
+            Object.entries(fields).forEach(([key, value]) => {
+              formData.append(key, value as string);
+              if ("key" === key) {
+                fileUrl = url + value;
+              }
+            });
+            formData.append("file", resizedImage.file!);
 
-          fetch(url, {
-            method: "POST",
-            body: formData,
-          }).then((res) => {
-            if (res.status === 204) {
-              props.imageSelected({
-                filename: file.name,
-                url: fileUrl,
-                base64: resizedImage.base64,
-              });
-            } else {
-              alert("upload failed");
-              return null;
-            }
-          });
-        } else {
-          const { error } = await response.json();
-          if ("NO_QUOTA" === error) {
-            // TODO use localise error message
-            showToast(error);
+            fetch(url, {
+              method: "POST",
+              body: formData,
+            }).then((res) => {
+              if (res.status === 204) {
+                props.imageSelected({
+                  filename: file.name,
+                  url: fileUrl,
+                  base64: resizedImage.base64,
+                });
+              } else {
+                alert("upload failed");
+                return null;
+              }
+            });
           } else {
-            showToast(error);
+            const { error } = await response.json();
+            if ("NO_QUOTA" === error) {
+              // TODO use localise error message
+              showToast(error);
+            } else {
+              showToast(error);
+            }
           }
-        }
-      });
+        });
+      }
     };
 
     fileInput.click();
@@ -711,7 +719,7 @@ export function ChatActions(props: {
       )}
       {props.display && (
         <ChatAction
-          onClick={selectImage}
+          onClick={selectImage(currentModel === "gemini-pro-vision")}
           text="选择图片"
           icon={<UploadIcon />}
         />
