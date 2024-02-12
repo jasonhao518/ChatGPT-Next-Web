@@ -39,10 +39,10 @@ export class GeminiProApi implements LLMApi {
     let messages = msgs.map((v) => ({
       role: v.role.replace("assistant", "model").replace("system", "user"),
       parts: [{ text: v.content } as any].concat(
-        v.images?.map((image) => ({
+        v.images?.map(async (image) => ({
           inlineData: {
-            mimeType: image.substring(image.lastIndexOf(".") + 1),
-            data: toBase64ImageUrl(image),
+            mimeType: "image/" + image.substring(image.lastIndexOf(".") + 1),
+            data: await toBase64ImageUrl(image),
           },
         })),
       ),
