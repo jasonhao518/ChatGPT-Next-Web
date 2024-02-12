@@ -7,6 +7,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { Quota } from "@/app/constant";
 import { saveFile } from "../common";
 
+function getExtensionFromMimeType(mimeType: string): string {
+  const mimeToExtensionMap: { [key: string]: string } = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "application/pdf": "pdf",
+    // Add more mappings as needed
+  };
+
+  const defaultExtension = "unknown";
+
+  const extension = mimeToExtensionMap[mimeType] || defaultExtension;
+  return extension;
+}
+
 export async function POST(req: NextRequest) {
   const { fileId, index, folder, folderName, filename, size, contentType } =
     await req.json();
@@ -33,7 +47,9 @@ export async function POST(req: NextRequest) {
       : process.env.AWS_IMG_BUCKET_NAME!;
     const region = folder ? process.env.AWS_REGION : process.env.AWS_IMG_REGION;
     const client = new S3Client({ region: region });
-    const path = folder ? folder + "/" + fileId : token.id + "/" + fileId;
+    const path = folder
+      ? folder + "/" + fileId
+      : token.id + "/" + fileId + "." + getExtensionFromMimeType(contentType);
     const { url, fields } = await createPresignedPost(client, {
       Bucket: bucket,
       Key: path,
