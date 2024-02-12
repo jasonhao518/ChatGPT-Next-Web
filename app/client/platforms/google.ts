@@ -32,8 +32,10 @@ export class GeminiProApi implements LLMApi {
       role: v.role.replace("assistant", "model").replace("system", "user"),
       parts: [{ text: v.content } as any].concat(
         v.images?.map((image) => ({
-          mimeType: "images/" + image.substring(image.lastIndexOf(".") + 1),
-          fileUri: image,
+          file_data: {
+            mime_type: "image/" + image.substring(image.lastIndexOf(".") + 1),
+            file_uri: image,
+          },
         })),
       ),
     }));
