@@ -1509,7 +1509,8 @@ function _Chat() {
                           src={image}
                         />
                         {message.model === "midjourney" &&
-                          "imagine" === message.action && (
+                          ("imagine" === message.action ||
+                            "blend" === message.action) && (
                             <>
                               <div className={styles["button-line"]}>
                                 <button
