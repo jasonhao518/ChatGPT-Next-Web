@@ -1515,7 +1515,7 @@ function _Chat() {
                                 className={styles["my-button"]}
                                 onClick={() => onInput(message.id + " U1")}
                               >
-                                U1 {message.action}
+                                U1 {message.status}
                               </button>
                               <button
                                 className={styles["my-button"]}
