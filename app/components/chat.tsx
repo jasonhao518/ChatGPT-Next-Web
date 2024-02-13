@@ -1508,62 +1508,63 @@ function _Chat() {
                           className={styles["chat-message-image"]}
                           src={image}
                         />
-                        {message.model === "midjourney" && (
-                          <>
-                            <div className={styles["button-line"]}>
-                              <button
-                                className={styles["my-button"]}
-                                onClick={() => onInput(message.id + " U1")}
-                              >
-                                U1
-                              </button>
-                              <button
-                                className={styles["my-button"]}
-                                onClick={() => onInput(message.id + " U2")}
-                              >
-                                U2
-                              </button>
-                              <button
-                                className={styles["my-button"]}
-                                onClick={() => onInput(message.id + " U3")}
-                              >
-                                U3
-                              </button>
-                              <button
-                                className={styles["my-button"]}
-                                onClick={() => onInput(message.id + " U4")}
-                              >
-                                U4
-                              </button>
-                            </div>
-                            <div className={styles["button-line"]}>
-                              <button
-                                className={styles["my-button"]}
-                                onClick={() => onInput(message.id + " V1")}
-                              >
-                                V1
-                              </button>
-                              <button
-                                className={styles["my-button"]}
-                                onClick={() => onInput(message.id + " V2")}
-                              >
-                                V2
-                              </button>
-                              <button
-                                className={styles["my-button"]}
-                                onClick={() => onInput(message.id + " V3")}
-                              >
-                                V3
-                              </button>
-                              <button
-                                className={styles["my-button"]}
-                                onClick={() => onInput(message.id + " V4")}
-                              >
-                                V4
-                              </button>
-                            </div>
-                          </>
-                        )}
+                        {message.model === "midjourney" &&
+                          "imagine" === message.action && (
+                            <>
+                              <div className={styles["button-line"]}>
+                                <button
+                                  className={styles["my-button"]}
+                                  onClick={() => onInput(message.id + " U1")}
+                                >
+                                  U1
+                                </button>
+                                <button
+                                  className={styles["my-button"]}
+                                  onClick={() => onInput(message.id + " U2")}
+                                >
+                                  U2
+                                </button>
+                                <button
+                                  className={styles["my-button"]}
+                                  onClick={() => onInput(message.id + " U3")}
+                                >
+                                  U3
+                                </button>
+                                <button
+                                  className={styles["my-button"]}
+                                  onClick={() => onInput(message.id + " U4")}
+                                >
+                                  U4
+                                </button>
+                              </div>
+                              <div className={styles["button-line"]}>
+                                <button
+                                  className={styles["my-button"]}
+                                  onClick={() => onInput(message.id + " V1")}
+                                >
+                                  V1
+                                </button>
+                                <button
+                                  className={styles["my-button"]}
+                                  onClick={() => onInput(message.id + " V2")}
+                                >
+                                  V2
+                                </button>
+                                <button
+                                  className={styles["my-button"]}
+                                  onClick={() => onInput(message.id + " V3")}
+                                >
+                                  V3
+                                </button>
+                                <button
+                                  className={styles["my-button"]}
+                                  onClick={() => onInput(message.id + " V4")}
+                                >
+                                  V4
+                                </button>
+                              </div>
+                            </>
+                          )}
                       </>
                     ))}
                   </div>

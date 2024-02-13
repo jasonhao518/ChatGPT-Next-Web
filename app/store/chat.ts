@@ -28,6 +28,7 @@ export type ChatMessage = RequestMessage & {
   date: string;
   references?: Array<Reference>;
   status?: string;
+  action?: string;
   streaming?: boolean;
   images?: string[];
   isError?: boolean;
@@ -384,6 +385,7 @@ export const useChatStore = createPersistStore(
                 // when submitting request, check the status
                 if (json?.status) {
                   botMessage.status = json.status;
+                  botMessage.action = json.action;
                   botMessage.id = json.id;
                   botMessage.content = `${json.status}, please click refresh button to update`;
                 }
