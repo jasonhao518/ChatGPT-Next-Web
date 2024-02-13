@@ -383,7 +383,11 @@ export const useChatStore = createPersistStore(
                 const json = JSON.parse(content) as any;
                 // when submitting request, check the status
                 if (json?.status) {
-                  botMessage.status = json.status;
+                  if ("succeed" === json.status) {
+                    botMessage.status = json.action;
+                  } else {
+                    botMessage.status = json.status;
+                  }
                   botMessage.id = json.id;
                   botMessage.content = `${json.status}, please click refresh button to update`;
                 }
