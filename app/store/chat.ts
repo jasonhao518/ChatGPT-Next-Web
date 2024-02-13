@@ -382,7 +382,6 @@ export const useChatStore = createPersistStore(
                 );
                 const json = JSON.parse(content) as any;
                 // when submitting request, check the status
-                console.log(json);
                 if (json?.status) {
                   if ("succeed" === json.status) {
                     botMessage.status = json.action;
@@ -580,7 +579,11 @@ export const useChatStore = createPersistStore(
                 const json = JSON.parse(content) as any;
                 // when submitting request, check the status
                 if (json?.status) {
-                  msg.status = json.status;
+                  if ("succeed" === json.status) {
+                    msg.status = json.action;
+                  } else {
+                    msg.status = json.status;
+                  }
                   msg.id = json.id;
                   msg.content = `${json.status}, ${Locale.Refresh}`;
                 }
