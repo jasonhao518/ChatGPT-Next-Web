@@ -26,8 +26,6 @@ function getMIME(extension: string) {
     return "image/heic";
   } else if ("heif" === extension) {
     return "image/heif";
-  } else if ("mp4" === extension) {
-    return "video/mp4";
   }
   return "";
 }

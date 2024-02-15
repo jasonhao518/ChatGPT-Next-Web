@@ -105,65 +105,56 @@ function resizeImage(
   maxHeight: number,
 ): Promise<ResizedImage> {
   return new Promise((resolve, reject) => {
-    if(file.type === "video/mp4") {
-      const resizedImage: ResizedImage = {
-        file: file,
-        base64: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEBLAEsAAD/4QBvRXhpZgAASUkqAAgAAAADAA4BAgAlAAAAMgAAABoBBQABAAAAVwAAABsBBQABAAAAXwAAAAAAAABWZWN0b3IgZ3JhcGhpYyBvZiBubyB0aHVtYm5haWwgc3ltYm9sLAEAAAEAAAAsAQAAAQAAAP/hBUVodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+Cjx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iPgoJPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KCQk8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczpwaG90b3Nob3A9Imh0dHA6Ly9ucy5hZG9iZS5jb20vcGhvdG9zaG9wLzEuMC8iIHhtbG5zOklwdGM0eG1wQ29yZT0iaHR0cDovL2lwdGMub3JnL3N0ZC9JcHRjNHhtcENvcmUvMS4wL3htbG5zLyIgICB4bWxuczpHZXR0eUltYWdlc0dJRlQ9Imh0dHA6Ly94bXAuZ2V0dHlpbWFnZXMuY29tL2dpZnQvMS4wLyIgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIiB4bWxuczpwbHVzPSJodHRwOi8vbnMudXNlcGx1cy5vcmcvbGRmL3htcC8xLjAvIiAgeG1sbnM6aXB0Y0V4dD0iaHR0cDovL2lwdGMub3JnL3N0ZC9JcHRjNHhtcEV4dC8yMDA4LTAyLTI5LyIgeG1sbnM6eG1wUmlnaHRzPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvcmlnaHRzLyIgcGhvdG9zaG9wOkNyZWRpdD0iR2V0dHkgSW1hZ2VzIiBHZXR0eUltYWdlc0dJRlQ6QXNzZXRJRD0iMTE0NzU0NDgwNyIgeG1wUmlnaHRzOldlYlN0YXRlbWVudD0iaHR0cHM6Ly93d3cuaXN0b2NrcGhvdG8uY29tL2xlZ2FsL2xpY2Vuc2UtYWdyZWVtZW50P3V0bV9tZWRpdW09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/wD9v/8A/wCv1/8A/wD/AP8A5f8A/wD9/r//AP8A/wD8r/8A/wDf9f8A/wD/AP8A/X//AP5/r/8A/wD/AP8A6/8A/wD/AL1//wD/AP8A/wDf5/8A9+v/AP8A/wD/APz8v/8A/wBf/wD/AP8A/wDn/wDx/wD6/wD/AP8A/wD/AL//AK//ANf/AP8A/wD/AP8A/wD13/6//wD/AP8A/wD/AD//AD/1/wD/AP8A/wD/AHv/AP7/AK//AP8A/wD/AP8A/wD/APv9f/8A/wD/AP8A/f8A/wD76/8A/wD/AP8A/wDv/wD/AO9f/wD/AP8A/wD/AP8A/wD/ALr/AP8A/wD/AP8A/gAAANf/AP8A/wD/APl//wD/AP6//wD/AP8A/wD/AP8A/wD/AP3/AP8A/wD/AP8A/wD/AP8A/wDv/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP/EACsQAAIBAgUEAgIDAQEBAAAAAAABEWHxECExQVEgUHGRofAwQIHB0WCgsf/aAAgBAQABPxC9l7L2XsvZey9l7L2XsvZey9l7L2XsvZey9l7L2XsvZey9l7L2XsvZey9l7L2XsvZey9l7L2XsvZey9l7L2XsvZey9l7L2XsvZey9l7L2XsvZey9l7L2XsvZey9l7L2XsvZey9l7L2Xsvf/qE1wV0NWV/xHxmI1wlrmf5UGnSsYKcrVDUNp7f8GxhjdEa2iVC2s6LI0pJ5eZp1Q3Z5rv6TbhKTTmS5eQ/YVEObgkSESVOhHKvJmlNvRDmn5ZiRLPRoUtcp1XGGf/E++awKjmn4Zm8HqxVC/BdDaSW0lU5+/kP/ALGNadLjINtuW56Mv+ZYV5m7xrX4I2gtWKf5BpQrHTpBPCzFdd1eRp6JRDWWNV/gpzJg0mJ6PIc81TjubCEbdEcWVC9x0Q05G+XmJRp0aVv5NO/AaY+Q1jeX0JNoRtvZCqWl5MVSl4GMaEaa2fSzQmqcilpo1OE+9knt+uhpzJcvIe0FRI5sqEEISouhPKPJmnttRDun5ZmuEcLLrSbaSzbNNy+rx03C6MabNNQ1r0xy3aMJeG47Zr0rB/tQb4erPjMXVxfIbXOMg3uWx1n8URERERD0hLZdKUhPZ9MRERxDXDDbBvR9MREaalPRrssI1y9mxpArr2dVI2U9kdNPRNM1U4NEbaEt2aYfxP8AegY58zGXCO6K32VvsrfZW+yt9lb7K32VvsrfZW+yt9lb7K32VvsrfZW+yt9lb7K32VvsrfZW+yt9lb7K32VvsrfZW+y+EnfK47OE73Sh4KJaN546vlgzYXH77OLZ9nBPxnKwn3u046vlh8T9ZYS23sMamGiHFkHUz1qeDq+hVdnCGbZMFPNGoGmxPVZYavlh8T9ZSW1vPFpI01KexLJqzXT9Cq7ODEJqnIhCaNThTmZYavlh8T9VEi9GnSqk3lrp+hVdoCrMmGX/ABPDV8sPifqsQmqci06TU9CEGzPp+hVdoDzrNYQ3dZrDV8sPifrc/f4FUqSmCNsVHRDGM5b1fT9Cq7QE72bh4NJpp6MY53Qavlh8TqW5P9zIMlbZoiyZbNaP86bTlNoeuZ+X1/Qqu0AnDlFVVOEu9kk1fLD4nSxSJbcISl21q8HhCaexOT/Kv1voVXaQqhowl5qDV8sPidM7IyWXSS5VD3/wNNOGoaxYpEt5I4RQh7klbJp+f6FV2kIeCw8ZZGr5YfE6G6ibE6CS6l8ry8kPYeGuimBCNImnsxinMQaacNQ/y/Qqu0hRZ5401T/+4fE6I2Rm8vwIqzw+BLqlwjMQhEJZLoQy/AIEuWzWj/J9Cq7UFVlnh9t3WHxMWpd9fAhCKElC/OxITT2YyWYvZGn4voVXagl5LCE0e6w+JjmxcPj9LNf5UQpfD2f4foVXagopI6PiYcKt5+BKFC/TeEpp7MlZeDdfg+hVdqCqKROVKx+JhNwlH60knl5MqKvPV9Cq7WE73Sh4/Ew/q/XiiaJCTg3XT9Cq7WHjWax+Jg6g3aT/AGZb+lZk5PH6FV2sKMyY/EwQXw0KLNzL4XwvhfC+F8L4XwvhfC+F8L4XwvhfC+F8L4XwvhfC+F8EhBDnLH6FV2sGaE1TkQtNGpw2thA3NJkEEEEEEEEEEEEEEEEEEEEEEEEEEEEPgkVxKhJ9sCGb5OiFwQuCFwQuCFwQuCFwQuCFwQuCFwQuCFwQuCFwQuCFwQuCFwQuCFwQuCFwQuCFwQuCFwQuCF20GMQtHnscjdhLtcShQeS8F4LwXgvBeC8F4LwXgvBeC8F4LwXgvBeC8F4LwXgvBeC8F4LwXgvBeC8F4LwNtuW5f/qx/9k=",
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const image = new Image();
+      image.src = reader.result as string;
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        let width = image.width;
+        let height = image.height;
+
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+
+        if (height > maxHeight) {
+          width *= maxHeight / height;
+          height = maxHeight;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        if (ctx) {
+          ctx.drawImage(image, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const resizedFile = new File([blob], file.name, {
+                type: file.type,
+                lastModified: Date.now(),
+              });
+
+              const resizedImage: ResizedImage = {
+                file: resizedFile,
+                base64: reader.result as string,
+              };
+
+              resolve(resizedImage);
+            } else {
+              reject("blob not available");
+            }
+          }, file.type);
+        } else {
+          reject("ctx not available");
+        }
       };
-
-      resolve(resizedImage);
-    }else {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const image = new Image();
-        image.src = reader.result as string;
-        image.onload = () => {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-
-          let width = image.width;
-          let height = image.height;
-
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
-
-          if (height > maxHeight) {
-            width *= maxHeight / height;
-            height = maxHeight;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          if (ctx) {
-            ctx.drawImage(image, 0, 0, width, height);
-
-            canvas.toBlob((blob) => {
-              if (blob) {
-                const resizedFile = new File([blob], file.name, {
-                  type: file.type,
-                  lastModified: Date.now(),
-                });
-
-                const resizedImage: ResizedImage = {
-                  file: resizedFile,
-                  base64: reader.result as string,
-                };
-
-                resolve(resizedImage);
-              } else {
-                reject("blob not available");
-              }
-            }, file.type);
-          } else {
-            reject("ctx not available");
-          }
-        };
-      };
-      reader.onerror = (error) => reject(error);
-    }
+    };
+    reader.onerror = (error) => reject(error);
   });
 }
 
@@ -553,7 +544,7 @@ export function ChatActions(props: {
   function selectImage() {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
-    fileInput.accept = ".png,.jpg,.webp,.jpeg,.mp4";
+    fileInput.accept = ".png,.jpg,.webp,.jpeg";
     const fileReader = new FileReader();
     fileInput.onchange = async (event: any) => {
       const file = event.target.files[0];
