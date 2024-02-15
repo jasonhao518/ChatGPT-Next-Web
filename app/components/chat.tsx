@@ -544,7 +544,7 @@ export function ChatActions(props: {
   function selectImage() {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
-    fileInput.accept = ".png,.jpg,.webp,.jpeg";
+    fileInput.accept = ".png,.jpg,.webp,.jpeg,.mp4";
     const fileReader = new FileReader();
     fileInput.onchange = async (event: any) => {
       const file = event.target.files[0];
