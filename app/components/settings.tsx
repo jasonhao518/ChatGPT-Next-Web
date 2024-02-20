@@ -1,7 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
 
 import styles from "./settings.module.scss";
-import { signOut } from "next-auth/react";
+import {
+  OrganizationList,
+  OrganizationSwitcher,
+  SignInButton,
+  SignOutButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+  auth,
+  useOrganization,
+} from "@clerk/nextjs";
 import ResetIcon from "../icons/reload.svg";
 import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
@@ -264,15 +274,7 @@ function DangerItems() {
         title={Locale.Settings.Danger.SignOut.Title}
         subTitle={Locale.Settings.Danger.SignOut.SubTitle}
       >
-        <IconButton
-          text={"Sign Out"}
-          onClick={async () => {
-            if (await showConfirm(Locale.Settings.Danger.SignOut.Confirm)) {
-              signOut();
-            }
-          }}
-          type="danger"
-        />
+        <SignOutButton />
       </ListItem>
     </List>
   );

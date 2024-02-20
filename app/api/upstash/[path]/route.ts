@@ -18,7 +18,7 @@ async function handle(
       },
     );
   }
-  const path = btoa(token.email!) + "-" + params.path;
+  const path = token.userId + "-" + params.path;
   if ("POST" === req.method) {
     console.log("[OpenAI Route] params ", params);
     const body = await req.text();

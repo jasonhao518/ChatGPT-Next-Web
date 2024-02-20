@@ -1,7 +1,6 @@
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { S3Client } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
-import { authOptions } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { Quota } from "@/app/constant";
 import { saveFile } from "../common";
@@ -25,7 +24,7 @@ export async function POST(req: NextRequest) {
   const { fileId, index, folder, folderName, filename, size, contentType } =
     await req.json();
   try {
-    const token = (await auth()) as any;
+    const token = await auth();
     if (!token) {
       return NextResponse.json(
         { error: "Invalid access" },
@@ -49,7 +48,7 @@ export async function POST(req: NextRequest) {
     const client = new S3Client({ region: region });
     const path = folder
       ? folder + "/" + fileId
-      : token.id + "/" + fileId + "." + getExtensionFromMimeType(contentType);
+      : token.userId + "/" + fileId + "." + getExtensionFromMimeType(contentType);
     const { url, fields } = await createPresignedPost(client, {
       Bucket: bucket,
       Key: path,
@@ -64,7 +63,7 @@ export async function POST(req: NextRequest) {
       Expires: 600, // Seconds before the presigned post expires. 3600 by default.
     });
     await saveFile("file", {
-      user: token.id,
+      user: token.userId,
       fileId,
       index,
       folder,

@@ -13,7 +13,7 @@ export async function getQuota(req: NextRequest): Promise<any> {
   const token = await auth();
   if (token) {
     try {
-      const response = await fetch(process.env.QUOTA_URL! + token.id, {
+      const response = await fetch(process.env.QUOTA_URL! + token.userId, {
         method: "GET", // *GET, POST, PUT, DELETE, etc.
         cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
         headers: {
