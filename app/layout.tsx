@@ -7,6 +7,7 @@ import { type Metadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getServerSideConfig } from "./config/server";
 import { GoogleTagManager } from "@next/third-parties/google";
+import { ClerkProvider } from "@clerk/nextjs";
 const serverConfig = getServerSideConfig();
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
+    <ClerkProvider>
     <html lang="en">
       <head>
         <meta name="config" content={JSON.stringify(getClientConfig())} />
@@ -53,5 +55,6 @@ export default function RootLayout({
         )}
       </body>
     </html>
+    </ClerkProvider>
   );
 }

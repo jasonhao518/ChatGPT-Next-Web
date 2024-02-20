@@ -3,14 +3,14 @@ import { getCustomModels, getServerSideConfig } from "../config/server";
 import { DEFAULT_MODELS, OPENAI_BASE_URL, GEMINI_BASE_URL } from "../constant";
 import { collectModelTable } from "../utils/model";
 import { makeAzurePath } from "../azure";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@clerk/nextjs";
 
 const secret = process.env.NEXTAUTH_SECRET;
 
 const serverConfig = getServerSideConfig();
 
 export async function getQuota(req: NextRequest): Promise<any> {
-  const token = await getToken({ req });
+  const token = await auth();
   if (token) {
     try {
       const response = await fetch(process.env.QUOTA_URL! + token.id, {
@@ -109,7 +109,7 @@ export async function requestOpenai(req: NextRequest, gpt4: boolean) {
   }
   const headers = req.headers;
   const fetchUrl = `${baseUrl}/${path}`;
-  const token = (await getToken({ req, secret })) as any;
+  const token = await auth() as any;
   const fetchOptions: RequestInit = {
     headers: {
       "Content-Type": "application/json",
@@ -202,7 +202,7 @@ export async function requestLangchain(req: NextRequest, gpt4: boolean) {
   const model = "gpt-3.5-turbo-16k";
   const temperature = jsonBody.temperature;
   const headers = req.headers;
-  const token = (await getToken({ req, secret })) as any;
+  const token = (await auth()) as any;
   const fetchOptions: RequestInit = {
     headers: {
       "Content-Type": "application/json",

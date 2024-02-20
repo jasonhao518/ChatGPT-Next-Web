@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { kv } from "@vercel/kv";
-import { getToken } from "next-auth/jwt";
-import { NextRequestWithAuth } from "next-auth/middleware";
+import { auth } from "@clerk/nextjs";
 
 async function handle(
-  req: NextRequestWithAuth,
+  req: Request,
   { params }: { params: { path: string } },
 ) {
-  const token = await getToken({ req });
+  const token = await auth();
   if (!token) {
     return NextResponse.json(
       {

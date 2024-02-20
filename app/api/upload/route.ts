@@ -2,10 +2,10 @@ import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { S3Client } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 import { authOptions } from "@/lib/auth";
-import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { Quota } from "@/app/constant";
 import { saveFile } from "../common";
+import { auth } from "@clerk/nextjs";
 
 function getExtensionFromMimeType(mimeType: string): string {
   const mimeToExtensionMap: { [key: string]: string } = {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const { fileId, index, folder, folderName, filename, size, contentType } =
     await req.json();
   try {
-    const token = (await getToken({ req })) as any;
+    const token = (await auth()) as any;
     if (!token) {
       return NextResponse.json(
         { error: "Invalid access" },

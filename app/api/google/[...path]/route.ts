@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../auth";
+import { auth as auth1} from "@clerk/nextjs"
 import { getServerSideConfig } from "@/app/config/server";
 import { GEMINI_BASE_URL, Google, ModelProvider } from "@/app/constant";
 import { saveFile } from "../../common";
-import { getToken } from "next-auth/jwt";
 const secret = process.env.NEXTAUTH_SECRET;
 
 async function handle(
@@ -90,7 +90,7 @@ async function handle(
     newHeaders.set("X-Accel-Buffering", "no");
     if (res.status >= 200 && res.status <= 299) {
       const headers = req.headers;
-      const token1 = (await getToken({ req, secret })) as any;
+      const token1 = auth1() as any;
 
       await saveFile("transaction", {
         transaction_id: headers.get("X-Transaction-Id")!,

@@ -20,6 +20,7 @@
     "proxy-dev-win": "proxychains -f ./scripts/proxychains.conf yarn dev"
   },
   "dependencies": {
+    "@clerk/nextjs": "^4.29.3",
     "@aws-sdk/client-s3": "^3.499.0",
     "@aws-sdk/s3-presigned-post": "^3.499.0",
     "@fortaine/fetch-event-source": "^3.0.6",
@@ -38,9 +39,7 @@
     "html-to-image": "^1.11.11",
     "mermaid": "^10.6.1",
     "nanoid": "^5.0.3",
-    "next-auth": "^4.24.5",
     "next": "^13.4.19",
-    "midjourney": "^4.3.13",
     "node-fetch": "^3.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
