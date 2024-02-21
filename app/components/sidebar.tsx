@@ -162,7 +162,7 @@ export function SideBar(props: { className?: string }) {
           Build your own AI assistant.
         </div>
         <div className={styles["sidebar-logo"] + " no-dark"}>
-          <ChatGptIcon />
+            <OrganizationSwitcher />
         </div>
       </div>
 
@@ -218,7 +218,9 @@ export function SideBar(props: { className?: string }) {
             </Link>
           </div>
           <div className={styles["sidebar-action"]}>
-              <OrganizationSwitcher />
+            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
+              <IconButton icon={<GithubIcon />} shadow />
+            </a>
           </div>
         </div>
         <div>
